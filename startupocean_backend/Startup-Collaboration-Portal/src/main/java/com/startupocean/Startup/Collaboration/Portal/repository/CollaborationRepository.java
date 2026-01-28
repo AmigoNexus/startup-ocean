@@ -1,0 +1,24 @@
+package com.startupocean.Startup.Collaboration.Portal.repository;
+
+import com.startupocean.Startup.Collaboration.Portal.entity.Collaboration;
+import com.startupocean.Startup.Collaboration.Portal.entity.Company;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface CollaborationRepository extends JpaRepository<Collaboration, Long> {
+    List<Collaboration> findByRequesterCompanyAndIsActiveTrue(Company company);
+    List<Collaboration> findByTargetCompanyAndIsActiveTrue(Company company);
+
+    @Query("SELECT c FROM Collaboration c WHERE c.isActive = true AND " +
+            "(c.requesterCompany = :company OR c.targetCompany = :company)")
+    List<Collaboration> findAllCollaborationsByCompany(@Param("company") Company company);
+
+    @Query("SELECT c FROM Collaboration c WHERE c.isActive = true AND " +
+            "c.targetCompany = :company AND c.status = 'PENDING'")
+    List<Collaboration> findPendingCollaborationsForCompany(@Param("company") Company company);
+}
