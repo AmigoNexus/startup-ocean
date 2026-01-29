@@ -35,12 +35,29 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
-  register: (data) => api.post('/auth/register', data),
-  requestLoginOtp: (email) => api.post('/auth/login/request-otp', { email }),
-  verifyLoginOtp: (data) => api.post('/auth/login/verify-otp', data),
-  verifyOtp: (data) => api.post('/auth/verify-otp', data),
-  resendOtp: (email) => api.post(`/auth/resend-otp?email=${email}`),
+  register: (data) => api.post("/auth/register", data),
+
+  requestLoginOtp: (email) =>
+    api.post("/auth/login/request-otp", { email }, {
+      headers: { Authorization: undefined },
+    }),
+
+  verifyLoginOtp: (data) =>
+    api.post("/auth/login/verify-otp", data, {
+      headers: { Authorization: undefined },
+    }),
+
+  verifyOtp: (data) =>
+    api.post("/auth/verify-otp", data, {
+      headers: { Authorization: undefined },
+    }),
+
+  resendOtp: (email) =>
+    api.post(`/auth/resend-otp?email=${email}`, null, {
+      headers: { Authorization: undefined },
+    }),
 };
+
 
 export const companyAPI = {
   create: (data) => api.post('/companies', data),

@@ -41,7 +41,8 @@ public class SecurityConfig {
         // Frontend allowed origins
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://localhost:3000"
+                "http://startup-ocean.in",
+                "https://startup-ocean.in"
         ));
 
         config.setAllowedMethods(List.of(
@@ -71,6 +72,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/activity/**").permitAll()
                         .requestMatchers("/activity/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/companies/**").permitAll()
