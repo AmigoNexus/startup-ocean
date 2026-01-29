@@ -73,6 +73,7 @@ const Register = () => {
       const response = await authAPI.register(registrationData);
 
       if (response.data) {
+        // Save company data for later (after OTP verification)
         const companyData = {
           phoneNumber: formData.phoneNumber,
           description: formData.description,
@@ -88,9 +89,11 @@ const Register = () => {
 
         localStorage.setItem('pendingCompanyData', JSON.stringify(companyData));
 
-        alert(response.data.message || 'Registration successful! Please verify OTP.');
-
-        navigate('/verify-otp', { state: { email: formData.email } });
+        // Navigate to OTP verification page
+        navigate('/verify-otp', { 
+          state: { email: formData.email },
+          replace: true 
+        });
       }
     } catch (error) {
       console.error('Registration error:', error);

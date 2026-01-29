@@ -13,6 +13,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Register from './auth/Register';
 import Login from './auth/Login';
 import DashboardPage from './pages/Dashboard';
+import VerifyOTP from './components/VerifyOTP';
 
 function AppRoutes() {
   return (
@@ -23,6 +24,7 @@ function AppRoutes() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verify-otp" element={<VerifyOTP />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
           <Route path="/company" element={<PrivateRoute><CompanyPage /></PrivateRoute>} />
