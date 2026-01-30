@@ -41,8 +41,8 @@ public class SecurityConfig {
         // Frontend allowed origins
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://startup-ocean.in",
-                "https://startup-ocean.in"
+                "http://startupocean.in",
+                "https://startupocean.in"
         ));
 
         config.setAllowedMethods(List.of(

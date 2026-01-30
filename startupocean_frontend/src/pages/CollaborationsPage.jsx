@@ -31,7 +31,6 @@ const CollaborationsPage = () => {
       setCollaborations(response.data.data || response.data || []);
     } catch (error) {
       console.error('Error fetching collaborations:', error);
-      toast.error('Failed to fetch collaborations');
     } finally {
       setLoading(false);
     }
@@ -43,7 +42,6 @@ const CollaborationsPage = () => {
       setCompanies(response.data.data || response.data || []);
     } catch (error) {
       console.error('Error fetching companies:', error);
-      toast.error('Failed to fetch companies');
     }
   };
 
@@ -59,7 +57,6 @@ const CollaborationsPage = () => {
       setShowDetailsModal(false);
     } catch (error) {
       console.error('Error accepting collaboration:', error);
-      toast.error(error.response?.data?.message || 'Failed to accept collaboration');
     }
   };
 
@@ -75,7 +72,6 @@ const CollaborationsPage = () => {
       setShowDetailsModal(false);
     } catch (error) {
       console.error('Error rejecting collaboration:', error);
-      toast.error(error.response?.data?.message || 'Failed to reject collaboration');
     }
   };
 
@@ -83,7 +79,7 @@ const CollaborationsPage = () => {
     e.preventDefault();
 
     if (!requestForm.targetCompanyId) {
-      toast.error('Please select a company');
+      toast('Please select a company');
       return;
     }
 
@@ -97,7 +93,7 @@ const CollaborationsPage = () => {
       }
     } catch (error) {
       console.error('Error sending collaboration:', error);
-      toast.error(error.response?.data?.message || 'Failed to send request');
+      toast('Failed to send request');
     }
   };
 

@@ -42,7 +42,7 @@ const SearchPage = () => {
       setCompanies(realCompanies);
     } catch (err) {
       console.error("Search failed", err);
-      toast.error('Search failed. Please try again.');
+      toast('Search not found. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -81,7 +81,6 @@ const SearchPage = () => {
       setCompanies(realCompanies);
     } catch (err) {
       console.error("Failed to fetch companies", err);
-      toast.error('Failed to load companies');
     } finally {
       setLoading(false);
     }
@@ -94,7 +93,7 @@ const SearchPage = () => {
 
   const openConnectModal = (company) => {
     if (!isAuthenticated) {
-      toast.error('Please login to send connection request');
+      toast('Please login to send connection request');
       navigate('/login');
       return;
     }
@@ -116,7 +115,7 @@ const SearchPage = () => {
       setConnectMessage('');
     } catch (error) {
       console.error('Failed to send request:', error);
-      toast.error(error.response?.data?.message || 'Failed to send request');
+      toast('Failed to send request');
     }
   };
 

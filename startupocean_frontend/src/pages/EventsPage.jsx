@@ -30,7 +30,6 @@ const EventsPage = () => {
                     : await eventAPI.getPast();
             setEvents(response.data.data || []);
         } catch (error) {
-            toast.error('Failed to fetch events');
             console.error('Fetch events error:', error);
         } finally {
             setLoading(false);
@@ -38,15 +37,15 @@ const EventsPage = () => {
     };
     const handleRegister = async (eventId) => {
         if (!isAuthenticated) {
-            toast.error('Please login to register for events');
+            toast('Please login to register for events');
             return;
         }
         try {
             await eventAPI.register(eventId);
-            toast.success('Successfully registeteal for event!');
+            toast.success('Successfully registered for event!');
             fetchEvents();
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Registration failed');
+        } catch {
+            toast('Registration failed');
         }
     };
 
@@ -56,7 +55,7 @@ const EventsPage = () => {
             toast.success('Registration cancelled successfully');
             fetchEvents();
         } catch {
-            toast.error('Failed to cancel registration');
+            toast('Failed to cancel registration');
         }
     };
     const handleDelete = async (eventId) => {
@@ -66,7 +65,7 @@ const EventsPage = () => {
             toast.success('Event deleted successfully');
             fetchEvents();
         } catch {
-            toast.error('Failed to delete event');
+            toast('Failed to delete event');
         }
     };
 
@@ -377,7 +376,7 @@ const EventModal = ({ event, onClose, onSuccess }) => {
             }
             onSuccess();
         } catch (error) {
-            toast.error(`Failed to ${event ? 'update' : 'create'} event`);
+            toast(`Failed to ${event ? 'update' : 'create'} event`);
             console.error('Event operation error:', error);
         } finally {
             setLoading(false);

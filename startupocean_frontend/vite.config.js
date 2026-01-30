@@ -7,8 +7,8 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: [
-      'startup-ocean.in',
-      'www.startup-ocean.in'
+      'startupocean.in',
+      'www.startupocean.in'
     ]
   }
 })

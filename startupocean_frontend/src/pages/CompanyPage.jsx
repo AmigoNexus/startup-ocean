@@ -74,7 +74,7 @@ const CompanyPage = () => {
       }
       fetchCompany();
     } catch {
-      toast.error('Failed to save company');
+      toast('Failed to save company');
     } finally {
       setLoading(false);
     }

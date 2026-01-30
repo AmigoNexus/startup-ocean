@@ -22,7 +22,7 @@ const HomePage = () => {
       toast.success('Enquiry submitted successfully!');
       setEnquiryForm({ name: '', email: '', phone: '', message: '' });
     } catch {
-      toast.error('Failed to submit enquiry');
+      toast('Failed to submit enquiry');
     } finally {
       setLoading(false);
     }
