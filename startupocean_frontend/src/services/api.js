@@ -21,7 +21,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -58,7 +57,6 @@ export const authAPI = {
     }),
 };
 
-
 export const companyAPI = {
   create: (data) => api.post('/companies', data),
   update: (id, data) => api.put(`/companies/${id}`, data),
@@ -92,6 +90,13 @@ export const collaborationAPI = {
   delete: (id) => api.delete(`/collaborations/${id}`),
 };
 
+export const messageAPI = {
+  send: (data) => api.post('/messages', data),
+  getByCollaboration: (collaborationId) => api.get(`/messages/collaboration/${collaborationId}`),
+  markAsRead: (messageId) => api.put(`/messages/${messageId}/read`),
+  getUnreadCount: () => api.get('/messages/unread/count'),
+};
+
 export const enquiryAPI = {
   submit: (data) => api.post('/enquiries/submit', data),
   getAll: () => api.get('/enquiries'),
@@ -101,11 +106,10 @@ export const enquiryAPI = {
 
 export const activityAPI = {
   track: (data) =>
-    api.post("/api/activity/track", data, {
+    api.post("/activity/track", data, {
       headers: { Authorization: undefined },
     }),
 };
-
 
 export const trackActivity = async ({
   activityType,

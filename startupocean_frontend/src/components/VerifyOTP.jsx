@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { authAPI } from '../services/api';
-import { Mail, ArrowLeft } from 'lucide-react';
+import { authAPI, companyAPI } from '../services/api';
+import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const VerifyOTP = () => {
   const [otp, setOtp] = useState('');
@@ -9,31 +10,45 @@ const VerifyOTP = () => {
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [error, setError] = useState('');
+  const [verified, setVerified] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
+  const timerRef = useRef(null);
 
   const email = location.state?.email;
+  const companyName = location.state?.companyName;
+  const role = location.state?.role;
 
   useEffect(() => {
     if (!email) {
-      navigate('/register');
+      navigate('/register', { replace: true });
       return;
     }
+    startCountdown();
 
-    const timer = setInterval(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const startCountdown = () => {
+    setCountdown(60);
+    setCanResend(false);
+
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    timerRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           setCanResend(true);
-          clearInterval(timer);
+          clearInterval(timerRef.current);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-
-    return () => clearInterval(timer);
-  }, [email, navigate]);
+  };
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
@@ -47,28 +62,44 @@ const VerifyOTP = () => {
     setLoading(true);
 
     try {
-      const response = await authAPI.verifyOtp({
-        email: email,
-        otp: otp
-      });
-
-      if (response.data) {
-        if (response.data.token) {
-          localStorage.setItem('token', response.data.token);
-        }
-
-        if (response.data.user) {
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-        }
-        alert(response.data.message || 'Email verified successfully!');
-        const pendingData = localStorage.getItem('pendingCompanyData');
-
-        if (pendingData) {
-          navigate('/complete-profile');
-        } else {
-          navigate('/dashboard');
-        }
+      const response = await authAPI.verifyOtp({ email, otp });
+      if (!response.data?.success || !response.data?.data) {
+        setError(response.data?.message || 'Verification failed');
+        setLoading(false);
+        return;
       }
+
+      const { token, ...userData } = response.data.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      const pendingData = localStorage.getItem('pendingCompanyData');
+
+      if (pendingData && companyName) {
+        try {
+          const companyData = JSON.parse(pendingData);
+          const payload = {
+            companyName: companyName,
+            companyType: role || 'STARTUP',
+            description: companyData.description || '',
+            offerings: companyData.offerings?.length > 0
+              ? companyData.offerings
+              : ['General'],
+            socialLinks: companyData.socialLinks || {},
+          };
+          await companyAPI.create(payload);
+          toast.success('Account created and company profile saved!');
+        } catch (companyErr) {
+          console.error('Company creation failed:', companyErr);
+          toast('Account verified! You can complete your company profile later.');
+        }
+        localStorage.removeItem('pendingCompanyData');
+      } else {
+        toast.success('Email verified successfully!');
+      }
+      setVerified(true);
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 1800);
     } catch (error) {
       console.error('OTP verification error:', error);
 
@@ -87,7 +118,7 @@ const VerifyOTP = () => {
   };
 
   const handleResendOtp = async () => {
-    if (!canResend) return;
+    if (!canResend || loading) return;
 
     setLoading(true);
     setError('');
@@ -95,36 +126,39 @@ const VerifyOTP = () => {
     try {
       const response = await authAPI.resendOtp(email);
 
-      if (response.data) {
-        alert(response.data.message || 'OTP resent successfully!');
-        
-        setCountdown(60);
-        setCanResend(false);
-
-        const timer = setInterval(() => {
-          setCountdown((prev) => {
-            if (prev <= 1) {
-              setCanResend(true);
-              clearInterval(timer);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
+      if (response.data?.success) {
+        toast.success('OTP resent successfully!');
+        startCountdown();
+      } else {
+        setError(response.data?.message || 'Failed to resend OTP');
       }
     } catch (error) {
       console.error('Resend OTP error:', error);
-
-      if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else {
-        setError('Failed to resend OTP. Please try again.');
-      }
+      setError(error.response?.data?.message || 'Failed to resend OTP. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-
+  if (verified) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="flex justify-center mb-6">
+            <CheckCircle className="h-20 w-20 text-teal-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Registration Complete!
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Your account and company profile have been set up successfully. Redirecting to dashboard...
+          </p>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-400"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">

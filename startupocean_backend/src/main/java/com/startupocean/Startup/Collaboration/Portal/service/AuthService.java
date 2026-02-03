@@ -29,6 +29,7 @@ public class AuthService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setRole(User.UserRole.valueOf(request.getRole()));
+        user.setPhoneNumber(request.getPhoneNumber());
         user.setIsActive(true);
         user.setIsVerified(false);
         user.setProfileComplete(false);

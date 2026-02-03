@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { enquiryAPI, trackActivity } from '../services/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import StartupTrendingNewsMini from '../components/StartupTrendingNewsMini';
 
 const HomePage = () => {
   const [enquiryForm, setEnquiryForm] = useState({
@@ -34,102 +35,113 @@ const HomePage = () => {
     });
   }, []);
 
-  const testimonials = [
-    {
-      quote: "This platform helped us find the right legal and marketing partners quickly. It's a game-changer for startups!",
-      author: "Priya Sharma",
-      role: "Startup Founder",
-      company: "TechVenture India",
-      avatar: "PS"
-    },
-    {
-      quote: "StartupOcean connected us with amazing service providers. We scaled our business faster than we imagined!",
-      author: "Rajesh Kumar",
-      role: "CEO",
-      company: "InnovateLabs",
-      avatar: "RK"
-    },
-    {
-      quote: "The networking opportunities here are incredible. We found investors and mentors who truly understand our vision.",
-      author: "Ananya Desai",
-      role: "Co-founder",
-      company: "GreenTech Solutions",
-      avatar: "AD"
-    },
-    {
-      quote: "As a service provider, this platform helped me reach startups that genuinely needed my expertise. Highly recommended!",
-      author: "Vikram Patel",
-      role: "Business Consultant",
-      company: "Growth Partners",
-      avatar: "VP"
-    }
-  ];
+  // const testimonials = [
+  //   {
+  //     quote: "This platform helped us find the right legal and marketing partners quickly. It's a game-changer for startups!",
+  //     author: "Priya Sharma",
+  //     role: "Startup Founder",
+  //     company: "TechVenture India",
+  //     avatar: "PS"
+  //   },
+  //   {
+  //     quote: "StartupOcean connected us with amazing service providers. We scaled our business faster than we imagined!",
+  //     author: "Rajesh Kumar",
+  //     role: "CEO",
+  //     company: "InnovateLabs",
+  //     avatar: "RK"
+  //   },
+  //   {
+  //     quote: "The networking opportunities here are incredible. We found investors and mentors who truly understand our vision.",
+  //     author: "Ananya Desai",
+  //     role: "Co-founder",
+  //     company: "GreenTech Solutions",
+  //     avatar: "AD"
+  //   },
+  //   {
+  //     quote: "As a service provider, this platform helped me reach startups that genuinely needed my expertise. Highly recommended!",
+  //     author: "Vikram Patel",
+  //     role: "Business Consultant",
+  //     company: "Growth Partners",
+  //     avatar: "VP"
+  //   }
+  // ];
 
   return (
     <div>
       {isAuthenticated && (
-        <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white py-4">
-          <div className="container mx-auto px-4">
+        <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white py-2">
+          <div className="container mx-auto px-3">
             <h2 className="text-2xl font-semibold text-center">
               Welcome, <span className="font-bold">{user?.name || user?.email}</span>!
             </h2>
           </div>
         </div>
       )}
-      <section className={`bg-gradient-to-r from-primary-400 to-primary-500 text-white py-10 ${!isAuthenticated ? 'mt-' : ''}`}>
+      <section className={`bg-gradient-to-r from-primary-400 to-primary-500 text-white py-5 ${!isAuthenticated ? 'mt-' : ''}`}>
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold mb-6">
+          <h1 className="text-3xl font-bold mb-4">
             Startup Collaboration & Services Portal
           </h1>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
+          <p className="text-xl mb-4 max-w-2xl mx-auto">
             Connecting Startups & Service Providers Under One Umbrella<br />
             Platform Created for Startup. Service Providers. Founders. Investors.
           </p>
         </div>
       </section>
 
-      <section className="py-10 bg-white">
+      <section className="py-5 bg-white">
         <div className="container mx-auto px-2">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+          <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
             What Are You Looking For?
           </h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Link
-              to="/search?type=STARTUP"
-              className="bg-gradient-to-br from-blue-100 to-blue-100 p-8 rounded-xl shadow-lg hover:shadow-xl transition group"
-            >
-              <div className="flex items-center justify-center w-16 h-16 bg-blue-500 text-white rounded-full mb-4 group-hover:scale-110 transition">
-                <Briefcase className="h-8 w-8" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                Looking Startup for Collaboration
-              </h3>
-              <p className="text-gray-600">
-                Connect and collaborate with other startups.
-              </p>
-            </Link>
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <div className="grid md:grid-cols-2 gap-8 flex-1">
 
-            <Link
-              to="/search?type=SERVICE_PROVIDER"
-              className="bg-gradient-to-br from-green-100 to-green-100 p-8 rounded-xl shadow-lg hover:shadow-xl transition group"
-            >
-              <div className="flex items-center justify-center w-16 h-16 bg-green-500 text-white rounded-full mb-4 group-hover:scale-110 transition">
-                <Users className="h-8 w-8" />
+              <Link
+                to="/search?type=STARTUP"
+                className="bg-gradient-to-br from-blue-100 to-blue-100 p-8 rounded-xl shadow-lg hover:shadow-xl transition group"
+              >
+                <div className="flex items-center justify-center w-16 h-16 bg-blue-500 text-white rounded-full mb-4 group-hover:scale-110 transition">
+                  <Briefcase className="h-8 w-8" />
+                </div>
+
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                  Looking Startup for Collaboration
+                </h3>
+
+                <p className="text-gray-600">
+                  Connect and collaborate with other startups.
+                </p>
+              </Link>
+
+              <Link
+                to="/search?type=SERVICE_PROVIDER"
+                className="bg-gradient-to-br from-green-100 to-green-100 p-8 rounded-xl shadow-lg hover:shadow-xl transition group"
+              >
+                <div className="flex items-center justify-center w-16 h-16 bg-green-500 text-white rounded-full mb-4 group-hover:scale-110 transition">
+                  <Users className="h-8 w-8" />
+                </div>
+
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                  Service Providers
+                </h3>
+
+                <p className="text-gray-600">
+                  Find consultants to scale your startup.
+                </p>
+              </Link>
+            </div>
+            <div className="w-full lg:w-[380px] shrink-0">
+              <div className="rounded-xl shadow-lg border bg-white p-4">
+                <StartupTrendingNewsMini />
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                Service Providers
-              </h3>
-              <p className="text-gray-600">
-                Find consultants to scale your startup.
-              </p>
-            </Link>
+            </div>
           </div>
         </div>
       </section>
-
-      <section className="py-10 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+      <section className="py-5 bg-gray-50">
+        <div className="container mx-auto px-3">
+          <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
             What We Do
           </h2>
           <div className="grid md:grid-cols-4 gap-8">
@@ -168,16 +180,16 @@ const HomePage = () => {
       </section>
       <section className="py-16 bg-gradient-to-br from-teal-50 to-blue-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          {/* <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-800 mb-4">
               What Our Community Says
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
               Don't just take our word for it. Here's what startups and service providers have to say about StartupOcean.
             </p>
-          </div>
+          </div> */}
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {/* <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
             {testimonials.map((testimonial, idx) => (
               <div
                 key={idx}
@@ -206,13 +218,18 @@ const HomePage = () => {
                 </div>
               </div>
             ))}
-          </div>
+          </div> */}
           <div className="text-center mt-12">
             <p className="text-gray-700 text-lg mb-4">
-              Join thousands of startups and service providers already growing their business
+              Join startups and service providers already growing their business
             </p>
             <button className="bg-teal-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-teal-700 transition shadow-lg">
-              Get Started Today
+              <Link
+                to="/search"
+                className="text-white no-underline"
+              >
+                Get Started Today
+              </Link>
             </button>
           </div>
         </div>
@@ -246,7 +263,7 @@ const HomePage = () => {
             <div className="flex items-center justify-center mb-6">
               <Mail className="h-12 w-12 text-primary-500" />
             </div>
-            <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">
               Submit an Enquiry
             </h2>
             <form onSubmit={handleSubmitEnquiry} className="space-y-4">

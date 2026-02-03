@@ -36,9 +36,6 @@ public class Company {
     @Column(name = "company_type")
     private CompanyType companyType;
 
-    @Column(name = "logo_url")
-    private String logoUrl;
-
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Offering> offerings;
 

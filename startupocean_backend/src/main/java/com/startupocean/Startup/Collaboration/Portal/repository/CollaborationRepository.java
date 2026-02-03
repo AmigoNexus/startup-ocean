@@ -13,12 +13,5 @@ import java.util.List;
 public interface CollaborationRepository extends JpaRepository<Collaboration, Long> {
     List<Collaboration> findByRequesterCompanyAndIsActiveTrue(Company company);
     List<Collaboration> findByTargetCompanyAndIsActiveTrue(Company company);
-
-    @Query("SELECT c FROM Collaboration c WHERE c.isActive = true AND " +
-            "(c.requesterCompany = :company OR c.targetCompany = :company)")
-    List<Collaboration> findAllCollaborationsByCompany(@Param("company") Company company);
-
-    @Query("SELECT c FROM Collaboration c WHERE c.isActive = true AND " +
-            "c.targetCompany = :company AND c.status = 'PENDING'")
-    List<Collaboration> findPendingCollaborationsForCompany(@Param("company") Company company);
+    List<Collaboration> findByRequesterCompanyOrTargetCompanyAndIsActiveTrue(Company requesterCompany, Company targetCompany);
 }

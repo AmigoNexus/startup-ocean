@@ -50,7 +50,6 @@ public class CompanyService {
         company.setCompanyName(request.getCompanyName());
         company.setDescription(request.getDescription());
         company.setCompanyType(Company.CompanyType.valueOf(request.getCompanyType()));
-        company.setLogoUrl(request.getLogoUrl());
         company.setIsActive(true);
 
         Company savedCompany = companyRepository.save(company);
@@ -92,7 +91,6 @@ public class CompanyService {
 
         company.setCompanyName(request.getCompanyName());
         company.setDescription(request.getDescription());
-        company.setLogoUrl(request.getLogoUrl());
 
         Company updatedCompany = companyRepository.save(company);
         List<Offering> existingOfferings = offeringRepository.findByCompanyAndIsActiveTrue(company);
@@ -203,7 +201,6 @@ public class CompanyService {
         response.setCompanyName(company.getCompanyName());
         response.setDescription(company.getDescription());
         response.setCompanyType(company.getCompanyType().name());
-        response.setLogoUrl(company.getLogoUrl());
         response.setEmail(company.getUser().getEmail());
         response.setPhoneNumber(company.getUser().getPhoneNumber());
         response.setCreatedAt(company.getCreatedAt());

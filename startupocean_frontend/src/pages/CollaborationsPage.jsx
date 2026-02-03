@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { collaborationAPI, companyAPI } from '../services/api';
-import { Send, Inbox, CheckCircle, XCircle, Briefcase, Mail, Building2, Phone, Globe } from 'lucide-react';
+import { Send, Inbox, CheckCircle, XCircle, Briefcase, MessageSquare, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
+import EnhancedMessagingModal from '../components/EnhancedMessagingModal';
 
 const CollaborationsPage = () => {
   const [activeTab, setActiveTab] = useState('received');
@@ -10,6 +11,7 @@ const CollaborationsPage = () => {
   const [loading, setLoading] = useState(true);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showMessagingModal, setShowMessagingModal] = useState(false);
   const [selectedCollaboration, setSelectedCollaboration] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [requestForm, setRequestForm] = useState({
@@ -107,6 +109,11 @@ const CollaborationsPage = () => {
     setShowDetailsModal(true);
   };
 
+  const openMessaging = (collaboration) => {
+    setSelectedCollaboration(collaboration);
+    setShowMessagingModal(true);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -119,8 +126,6 @@ const CollaborationsPage = () => {
           Send Request
         </button>
       </div>
-
-      {/* Tabs */}
       <div className="flex gap-2 mb-6">
         <button
           onClick={() => setActiveTab('received')}
@@ -143,7 +148,6 @@ const CollaborationsPage = () => {
           Sent ({collaborations.filter(c => activeTab === 'sent').length})
         </button>
       </div>
-
       {loading ? (
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
@@ -158,6 +162,7 @@ const CollaborationsPage = () => {
               onAccept={handleAccept}
               onReject={handleReject}
               onViewDetails={viewDetails}
+              onOpenMessaging={openMessaging}
             />
           ))}
         </div>
@@ -243,11 +248,19 @@ const CollaborationsPage = () => {
           onReject={handleReject}
         />
       )}
+
+      {showMessagingModal && selectedCollaboration && (
+        <EnhancedMessagingModal
+          collaboration={selectedCollaboration}
+          type={activeTab}
+          onClose={() => setShowMessagingModal(false)}
+        />
+      )}
     </div>
   );
 };
 
-const CollaborationCard = ({ collaboration, type, onAccept, onReject, onViewDetails }) => {
+const CollaborationCard = ({ collaboration, type, onAccept, onReject, onViewDetails, onOpenMessaging }) => {
   const company = type === 'sent' ? collaboration.targetCompany : collaboration.requesterCompany;
 
   const statusColors = {
@@ -290,6 +303,16 @@ const CollaborationCard = ({ collaboration, type, onAccept, onReject, onViewDeta
         </div>
 
         <div className="flex gap-2">
+          {collaboration.status === 'ACCEPTED' && (
+            <button
+              onClick={() => onOpenMessaging(collaboration)}
+              className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Messages
+            </button>
+          )}
+
           <button
             onClick={() => onViewDetails(collaboration)}
             className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
@@ -333,14 +356,14 @@ const CollaborationDetailsModal = ({ collaboration, type, onClose, onAccept, onR
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
           >
-            ×
+            <X className="h-6 w-6" />
           </button>
         </div>
 
         <div className="bg-gradient-to-r from-teal-50 to-blue-50 rounded-lg p-6 mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 bg-teal-600 rounded-lg flex items-center justify-center">
-              <Building2 className="h-8 w-8 text-white" />
+            <div className="w-16 h-16 bg-teal-600 rounded-lg flex items-center justify-center text-white text-2xl font-bold">
+              {company?.companyName?.charAt(0) || '?'}
             </div>
             <div>
               <h3 className="text-2xl font-bold text-gray-800">{company?.companyName || 'Unknown'}</h3>
@@ -354,73 +377,6 @@ const CollaborationDetailsModal = ({ collaboration, type, onClose, onAccept, onR
             </div>
           )}
         </div>
-
-        <div className="mb-6">
-          <h4 className="text-lg font-semibold text-gray-800 mb-3">Contact Information</h4>
-          <div className="space-y-3">
-            {company?.user?.email && (
-              <div className="flex items-center gap-3 text-gray-700">
-                <Mail className="h-5 w-5 text-teal-600" />
-                <a href={`mailto:${company.user.email}`} className="text-teal-600 hover:underline">
-                  {company.user.email}
-                </a>
-              </div>
-            )}
-            {company?.user?.phoneNumber && (
-              <div className="flex items-center gap-3 text-gray-700">
-                <Phone className="h-5 w-5 text-teal-600" />
-                <a href={`tel:${company.user.phoneNumber}`} className="text-teal-600 hover:underline">
-                  {company.user.phoneNumber}
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {company?.offerings && company.offerings.length > 0 && (
-          <div className="mb-6">
-            <h4 className="text-lg font-semibold text-gray-800 mb-3">Offerings</h4>
-            <div className="flex flex-wrap gap-2">
-              {company.offerings.map((offering, index) => (
-                <span
-                  key={index}
-                  className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium"
-                >
-                  {offering.offeringName || offering}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {company?.socialLinks && (
-          <div className="mb-6">
-            <h4 className="text-lg font-semibold text-gray-800 mb-3">Social Links</h4>
-            <div className="space-y-2">
-              {company.socialLinks.website && (
-                <a
-                  href={company.socialLinks.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-teal-600 hover:underline"
-                >
-                  <Globe className="h-4 w-4" />
-                  Website
-                </a>
-              )}
-              {company.socialLinks.linkedin && (
-                <a
-                  href={company.socialLinks.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-teal-600 hover:underline"
-                >
-                  LinkedIn
-                </a>
-              )}
-            </div>
-          </div>
-        )}
 
         {collaboration.message && (
           <div className="mb-6">

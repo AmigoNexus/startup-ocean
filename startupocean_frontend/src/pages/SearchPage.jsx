@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Briefcase, Mail, Phone, Globe, UserPlus, Eye, X, Building2, Linkedin, Facebook, Instagram, Twitter } from 'lucide-react';
+import { Search, Briefcase, Mail, Phone, Globe, UserPlus, Eye, X, Building2, Linkedin, Facebook, Instagram, Twitter, Lock } from 'lucide-react';
 import { collaborationAPI, companyAPI, trackActivity } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -36,6 +36,8 @@ const SearchPage = () => {
         companyType: c.companyType,
         description: c.description,
         offerings: c.offerings || [],
+        email: c.email,
+        phoneNumber: c.phoneNumber,
         socialLinks: c.socialLinks || {}
       }));
 
@@ -87,6 +89,11 @@ const SearchPage = () => {
   };
 
   const viewDetails = (company) => {
+    if (!isAuthenticated) {
+      toast('Please login to view company profile');
+      navigate('/login');
+      return;
+    }
     setSelectedCompany(company);
     setShowDetailsModal(true);
   };
@@ -170,6 +177,8 @@ const SearchPage = () => {
               company={company}
               onViewDetails={viewDetails}
               onConnect={openConnectModal}
+              isAuthenticated={isAuthenticated}
+              navigate={navigate}
             />
           ))}
         </div>
@@ -189,6 +198,8 @@ const SearchPage = () => {
           company={selectedCompany}
           onClose={() => setShowDetailsModal(false)}
           onConnect={openConnectModal}
+          isAuthenticated={isAuthenticated}
+          navigate={navigate}
         />
       )}
       {showConnectModal && selectedCompany && (
@@ -250,7 +261,27 @@ const SearchPage = () => {
   );
 };
 
-const CompanyCard = ({ company, onViewDetails, onConnect }) => {
+const maskPhoneNumber = (phoneNumber) => {
+  if (!phoneNumber) return 'Not provided';
+
+  const length = phoneNumber.length;
+  if (length <= 4) return phoneNumber;
+
+  const visibleDigits = phoneNumber.slice(-4);
+  const maskedPart = '*'.repeat(length - 4);
+  return maskedPart + visibleDigits;
+};
+
+const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navigate }) => {
+  const handleViewProfile = () => {
+    if (!isAuthenticated) {
+      toast('Please login to view company profile');
+      navigate('/login');
+      return;
+    }
+    onViewDetails(company);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition flex flex-col">
       <div className="flex items-start justify-between mb-4">
@@ -287,7 +318,7 @@ const CompanyCard = ({ company, onViewDetails, onConnect }) => {
       )}
       <div className="mt-auto flex gap-3 pt-4 border-t border-gray-200">
         <button
-          onClick={() => onViewDetails(company)}
+          onClick={handleViewProfile}
           className="flex-1 flex items-center justify-center gap-2 border border-teal-400 text-teal-400 px-4 py-2 rounded-lg hover:bg-teal-50 transition font-medium"
         >
           <Eye className="h-4 w-4" />
@@ -306,7 +337,18 @@ const CompanyCard = ({ company, onViewDetails, onConnect }) => {
   );
 };
 
-const CompanyDetailsModal = ({ company, onClose, onConnect }) => {
+const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, navigate }) => {
+  const hasSocialLinks = company.socialLinks && Object.values(company.socialLinks).some(v => !!v);
+  const hasContact = !!(company.email || company.phoneNumber);
+
+  const socialIconMap = {
+    website: <Globe className="h-5 w-5 text-teal-400" />,
+    linkedin: <Linkedin className="h-5 w-5 text-teal-400" />,
+    facebook: <Facebook className="h-5 w-5 text-teal-400" />,
+    instagram: <Instagram className="h-5 w-5 text-teal-400" />,
+    twitter: <Twitter className="h-5 w-5 text-teal-400" />,
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8">
@@ -319,7 +361,7 @@ const CompanyDetailsModal = ({ company, onClose, onConnect }) => {
             <X className="h-6 w-6" />
           </button>
         </div>
-        <div className="bg-gradient-to-r from-teal-50 to-teal-50 rounded-lg p-6 mb-6">
+        <div className="bg-gradient-to-r from-teal-50 to-teal-100 rounded-lg p-6 mb-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-16 h-16 bg-teal-400 rounded-lg flex items-center justify-center">
               <Building2 className="h-8 w-8 text-white" />
@@ -336,29 +378,64 @@ const CompanyDetailsModal = ({ company, onClose, onConnect }) => {
             </div>
           )}
         </div>
+        {hasContact && (
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-3">Contact Information</h4>
 
-        {/* Contact Information */}
-        {/* <div className="mb-6">
-          <h4 className="text-lg font-semibold text-gray-800 mb-3">Contact Information</h4>
-          <div className="space-y-3">
-            {company.email && (
-              <div className="flex items-center gap-3 text-gray-700">
-                <Mail className="h-5 w-5 text-teal-400" />
-                <a href={`mailto:${company.email}`} className="text-teal-400 hover:underline">
-                  {company.email}
-                </a>
+            {isAuthenticated ? (
+              <div className="space-y-3">
+                {company.email && (
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <Mail className="h-5 w-5 text-teal-400" />
+                    <a href={`mailto:${company.email}`} className="text-teal-400 hover:underline">
+                      {company.email}
+                    </a>
+                  </div>
+                )}
+                {company.phoneNumber && (
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <Phone className="h-5 w-5 text-teal-400" />
+                    <span className="text-teal-500 font-medium">
+                      {maskPhoneNumber(company.phoneNumber)}
+                    </span>
+                  </div>
+                )}
               </div>
-            )}
-            {company.phoneNumber && (
-              <div className="flex items-center gap-3 text-gray-700">
-                <Phone className="h-5 w-5 text-teal-400" />
-                <a href={`tel:${company.phoneNumber}`} className="text-teal-400 hover:underline">
-                  {company.phoneNumber}
-                </a>
+            ) : (
+              <div className="space-y-3">
+                {company.email && (
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                    <span className="text-gray-500">***@***.com</span>
+                  </div>
+                )}
+                {company.phoneNumber && (
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <Phone className="h-5 w-5 text-gray-400" />
+                    <span className="text-gray-500">{maskPhoneNumber(company.phoneNumber)}</span>
+                  </div>
+                )}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center gap-3 mt-3">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-500">
+                      Full contact details are visible to logged-in users only.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      onClose();
+                      navigate('/login');
+                    }}
+                    className="text-sm bg-teal-400 text-white px-4 py-2 rounded-lg hover:bg-teal-500 transition font-medium whitespace-nowrap"
+                  >
+                    Login to view
+                  </button>
+                </div>
               </div>
             )}
           </div>
-        </div> */}
+        )}
 
         {company.offerings && company.offerings.length > 0 && (
           <div className="mb-6">
@@ -373,6 +450,49 @@ const CompanyDetailsModal = ({ company, onClose, onConnect }) => {
                 </span>
               ))}
             </div>
+          </div>
+        )}
+        {hasSocialLinks && (
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-3">Social Links</h4>
+
+            {isAuthenticated ? (
+              <div className="space-y-3">
+                {Object.entries(company.socialLinks).map(([key, value]) =>
+                  value ? (
+                    <div key={key} className="flex items-center gap-3">
+                      {socialIconMap[key] || <Globe className="h-5 w-5 text-teal-400" />}
+                      <a
+                        href={value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-teal-400 hover:underline truncate capitalize"
+                      >
+                        {key} — {value}
+                      </a>
+                    </div>
+                  ) : null
+                )}
+              </div>
+            ) : (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center gap-3">
+                <Lock className="h-5 w-5 text-gray-400" />
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500">
+                    Social links are visible to logged-in users only.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    onClose();
+                    navigate('/login');
+                  }}
+                  className="text-sm bg-teal-400 text-white px-4 py-2 rounded-lg hover:bg-teal-500 transition font-medium whitespace-nowrap"
+                >
+                  Login to view
+                </button>
+              </div>
+            )}
           </div>
         )}
         <div className="flex gap-3 pt-4 border-t border-gray-200">

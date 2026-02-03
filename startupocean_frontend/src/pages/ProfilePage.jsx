@@ -1,11 +1,8 @@
 import { useState, useEffect } from 'react';
-import {
-  User, Mail, Phone, MapPin, Briefcase,
-  Building2, Calendar, Edit2, Save, X, Shield
-} from 'lucide-react';
+import { User, Mail, Phone, Briefcase, Building2, Edit2, Save, X, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { companyAPI } from '../services/api';
-
+import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
   const { user: authUser, setUser: setAuthUser } = useAuth();
@@ -29,29 +26,27 @@ const ProfilePage = () => {
   const fetchCompany = async () => {
     try {
       const res = await companyAPI.getMyCompany();
-      if (res.data?.success) {
+      if (res.data?.success && res.data?.data) {
+        const companyData = res.data.data;
         setUser((prev) => ({
           ...prev,
-          company: res.data.data,
+          company: companyData,
+        }));
+        setFormData((prev) => ({
+          ...prev,
+          phoneNumber: companyData.phoneNumber || '',
         }));
       }
-    } catch {
-      // no company
+    } catch (err) {
+      console.log('Failed to fetch company:', err);
     }
   };
-
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
 
   const handleEdit = () => {
     setIsEditing(true);
     setFormData({
       name: user.name || '',
-      phoneNumber: user.phoneNumber || '',
+      phoneNumber: user.company?.phoneNumber || user.phoneNumber || '',
     });
   };
 
@@ -59,37 +54,58 @@ const ProfilePage = () => {
     setIsEditing(false);
     setFormData({
       name: user.name || '',
-      phoneNumber: user.phoneNumber || '',
+      phoneNumber: user.company?.phoneNumber || user.phoneNumber || '',
     });
   };
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/me`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      const updatedAuthUser = {
+        ...authUser,
+        name: formData.name,
+        phoneNumber: formData.phoneNumber,
+      };
 
-      const updatedUser = { ...user, ...formData };
-      setUser(updatedUser);
-      setAuthUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-
+      localStorage.setItem('user', JSON.stringify(updatedAuthUser));
+      setAuthUser(updatedAuthUser);
+      if (user.company && user.company.companyId) {
+        const companyPayload = {
+          companyName: user.company.companyName,
+          description: user.company.description || '',
+          companyType: user.company.companyType,
+          offerings: user.company.offerings || [],
+          socialLinks: user.company.socialLinks || {},
+        };
+        await companyAPI.update(user.company.companyId, companyPayload);
+        const updatedCompany = {
+          ...user.company,
+          phoneNumber: formData.phoneNumber,
+        };
+        setUser({
+          ...updatedAuthUser,
+          company: updatedCompany,
+        });
+        toast.success('Profile updated successfully!');
+      } else {
+        setUser(updatedAuthUser);
+        toast.success('Name updated successfully!');
+      }
       setIsEditing(false);
-      alert('Profile updated successfully!');
-    } catch {
-      alert('Failed to update profile');
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+      toast.error('Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 py-8">
@@ -101,7 +117,6 @@ const ProfilePage = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="bg-gradient-to-r from-teal-500 to-blue-600 h-32"></div>
@@ -134,9 +149,7 @@ const ProfilePage = () => {
               </div>
             </div>
           </div>
-
           <div className="lg:col-span-2 space-y-6">
-
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex justify-between mb-6">
                 <h3 className="text-2xl font-bold flex items-center gap-2">
@@ -145,18 +158,25 @@ const ProfilePage = () => {
                 </h3>
 
                 {!isEditing ? (
-                  <button onClick={handleEdit}
-                    className="bg-teal-600 text-white px-4 py-2 rounded-lg flex gap-2">
+                  <button
+                    onClick={handleEdit}
+                    className="bg-teal-600 text-white px-4 py-2 rounded-lg flex gap-2 hover:bg-teal-700 transition"
+                  >
                     <Edit2 className="h-4 w-4" /> Edit Profile
                   </button>
                 ) : (
                   <div className="flex gap-2">
-                    <button onClick={handleSave} disabled={loading}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg flex gap-2">
-                      <Save className="h-4 w-4" /> Save
+                    <button
+                      onClick={handleSave}
+                      disabled={loading}
+                      className="bg-green-600 text-white px-4 py-2 rounded-lg flex gap-2 hover:bg-green-700 transition disabled:opacity-50"
+                    >
+                      <Save className="h-4 w-4" /> {loading ? 'Saving...' : 'Save'}
                     </button>
-                    <button onClick={handleCancel}
-                      className="bg-gray-200 px-4 py-2 rounded-lg flex gap-2">
+                    <button
+                      onClick={handleCancel}
+                      className="bg-gray-200 px-4 py-2 rounded-lg flex gap-2 hover:bg-gray-300 transition"
+                    >
                       <X className="h-4 w-4" /> Cancel
                     </button>
                   </div>
@@ -166,44 +186,146 @@ const ProfilePage = () => {
               <Label label="Full Name">
                 {isEditing ? (
                   <input
-                    className="input"
+                    type="text"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 ) : (
-                  <Value icon={<User />} value={user.name} />
+                  <Value icon={<User className="h-5 w-5 text-teal-600" />} value={user.name} />
                 )}
               </Label>
 
               <Label label="Email Address">
-                <Value icon={<Mail />} value={user.email} />
+                <Value icon={<Mail className="h-5 w-5 text-red-500" />} value={user.email} />
               </Label>
 
               <Label label="Phone Number">
                 {isEditing ? (
                   <input
-                    className="input"
+                    type="tel"
+                    pattern="[0-9]{10}"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     value={formData.phoneNumber}
                     onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                    placeholder="1234567890"
                   />
                 ) : (
-                  <Value icon={<Phone />} value={user.phoneNumber || 'Not provided'} />
+                  <Value
+                    icon={<Phone className="h-5 w-5 text-green-600" />}
+                    value={user.company?.phoneNumber || user.phoneNumber || 'Not provided'}
+                  />
                 )}
               </Label>
             </div>
-
             {user.company && (
               <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-2xl font-bold mb-4 flex gap-2">
-                  <Building2 className="h-6 w-6 text-blue-600" />
+                <h3 className="text-2xl font-bold mb-6 flex gap-2">
+                  <Building2 className="h-6 w-6 text-teal-600" />
                   Company Information
                 </h3>
-
-                <p className="font-bold">{user.company.companyName}</p>
-                <p className="text-gray-600">{user.company.companyType}</p>
+                <div className="space-y-4">
+                  <Value
+                    icon={<Briefcase className="h-5 w-5 text-teal-600" />}
+                    value={user.company.companyName}
+                  />
+                  <Value
+                    icon={<Building2 className="h-5 w-5 text-teal-600" />}
+                    value={user.company.companyType}
+                  />
+                  <Value
+                    icon={<Mail className="h-5 w-5 text-red-500" />}
+                    value={user.company.email || user.email}
+                  />
+                  <Value
+                    icon={<Phone className="h-5 w-5 text-green-600" />}
+                    value={user.company.phoneNumber || "Not provided"}
+                  />
+                  <div className="bg-gray-50 px-4 py-3 rounded-lg">
+                    <p className="text-sm text-gray-500 mb-1">Description</p>
+                    <p className="font-medium text-gray-800">
+                      {user.company.description || "No description available"}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 px-4 py-3 rounded-lg">
+                    <p className="text-sm text-gray-500 mb-2">Offerings</p>
+                    {user.company.offerings?.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {user.company.offerings.map((item, index) => (
+                          <span
+                            key={index}
+                            className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-semibold"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500">No offerings added</p>
+                    )}
+                  </div>
+                  <div className="bg-gray-50 px-4 py-3 rounded-lg">
+                    <p className="text-sm text-gray-500 mb-2">Social Links</p>
+                    <div className="space-y-1 text-sm">
+                      {user.company.socialLinks?.website && (
+                        <a
+                          href={user.company.socialLinks.website}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-teal-600 hover:underline block"
+                        >
+                          🌐 Website
+                        </a>
+                      )}
+                      {user.company.socialLinks?.linkedin && (
+                        <a
+                          href={user.company.socialLinks.linkedin}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-teal-600 hover:underline block"
+                        >
+                          💼 LinkedIn
+                        </a>
+                      )}
+                      {user.company.socialLinks?.facebook && (
+                        <a
+                          href={user.company.socialLinks.facebook}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-teal-600 hover:underline block"
+                        >
+                          📘 Facebook
+                        </a>
+                      )}
+                      {user.company.socialLinks?.instagram && (
+                        <a
+                          href={user.company.socialLinks.instagram}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-teal-600 hover:underline block"
+                        >
+                          📸 Instagram
+                        </a>
+                      )}
+                      {user.company.socialLinks?.twitter && (
+                        <a
+                          href={user.company.socialLinks.twitter}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-teal-600 hover:underline block"
+                        >
+                          🐦 Twitter
+                        </a>
+                      )}
+                      {!user.company.socialLinks ||
+                        Object.values(user.company.socialLinks).every(v => !v) ? (
+                        <p className="text-gray-500">No social links available</p>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
-
           </div>
         </div>
       </div>
@@ -221,7 +343,7 @@ const Label = ({ label, children }) => (
 const Value = ({ icon, value }) => (
   <div className="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-lg">
     {icon}
-    <span className="font-medium">{value}</span>
+    <span className="font-medium text-gray-800">{value}</span>
   </div>
 );
 

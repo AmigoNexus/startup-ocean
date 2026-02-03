@@ -10,39 +10,42 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
 
   const navigate = useNavigate();
   const { requestLoginOtp, verifyLoginOtp } = useAuth();
 
   const handleRequestOtp = async (e) => {
     e.preventDefault();
-    setLoading(true);
+
+    setSendingOtp(true);
+    setStep(2);
+    startCountdown();
 
     const success = await requestLoginOtp(email);
 
-    if (success) {
-      setStep(2);
-      startCountdown();
+    if (!success) {
+      alert("OTP send failed");
+      setStep(1);
     }
 
-    setLoading(false);
+    setSendingOtp(false);
   };
+
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
 
-    if (otp.length !== 6) {
-      alert('Please enter a valid 6-digit OTP');
-      return;
-    }
+    if (otp.length !== 6) return;
 
-    setLoading(true);
+    setVerifyingOtp(true);
+
     const success = await verifyLoginOtp(email, otp);
-    setLoading(false);
 
-    if (success) {
-      navigate('/dashboard');
-    }
+    setVerifyingOtp(false);
+
+    if (success) navigate("/dashboard");
   };
 
   const startCountdown = () => {
@@ -110,10 +113,10 @@ const Login = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={sendingOtp}
               className="w-full bg-teal-400 text-white py-3 rounded-lg font-semibold hover:bg-teal-500 transition disabled:opacity-50"
             >
-              {loading ? 'Sending OTP...' : 'Send OTP →'}
+              {sendingOtp ? 'Sending OTP...' : 'Send OTP →'}
             </button>
 
             <p className="text-center text-gray-600 mt-6">
@@ -148,10 +151,10 @@ const Login = () => {
 
             <button
               type="submit"
-              disabled={loading || otp.length !== 6}
+              disabled={verifyingOtp || otp.length !== 6}
               className="w-full bg-teal-400 text-white py-3 rounded-lg font-semibold hover:bg-teal-500 transition disabled:opacity-50"
             >
-              {loading ? 'Verifying...' : 'Verify & Login'}
+              {verifyingOtp ? 'Verifying...' : 'Verify & Login'}
             </button>
 
             <div className="flex justify-between items-center">

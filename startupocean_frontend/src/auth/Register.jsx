@@ -22,6 +22,7 @@ const Register = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [registering, setRegistering] = useState(false);
 
   const handleNextStep = (e) => {
     e.preventDefault();
@@ -67,13 +68,13 @@ const Register = () => {
       email: formData.email,
       companyName: formData.companyName,
       role: formData.role,
+      phoneNumber: formData.phoneNumber || null,
     };
 
     try {
       const response = await authAPI.register(registrationData);
 
       if (response.data) {
-        // Save company data for later (after OTP verification)
         const companyData = {
           phoneNumber: formData.phoneNumber,
           description: formData.description,
@@ -88,11 +89,13 @@ const Register = () => {
         };
 
         localStorage.setItem('pendingCompanyData', JSON.stringify(companyData));
-
-        // Navigate to OTP verification page
-        navigate('/verify-otp', { 
-          state: { email: formData.email },
-          replace: true 
+        navigate('/verify-otp', {
+          state: {
+            email: formData.email,
+            companyName: formData.companyName,
+            role: formData.role,               
+          },
+          replace: true
         });
       }
     } catch (error) {
@@ -135,14 +138,10 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4">
-      {/* Main Container */}
       <div className="w-full max-w-6xl bg-white shadow-2xl rounded-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
 
         <div className="bg-gradient-to-b from-teal-600 to-teal-700 text-white p-10 flex flex-col justify-center">
-          <h2 className="text-3xl font-bold mb-4">
-            Registration Guide
-          </h2>
-
+          <h2 className="text-3xl font-bold mb-4">Registration Guide</h2>
           <p className="text-teal-100 mb-10">
             Complete your StartupOcean registration in 3 easy steps.
           </p>
@@ -166,7 +165,6 @@ const Register = () => {
                 >
                   {s.icon}
                 </div>
-
                 <div>
                   <h3 className="font-semibold text-lg">{s.title}</h3>
                   <p className="text-sm opacity-90">{s.desc}</p>
@@ -181,9 +179,7 @@ const Register = () => {
         </div>
         <div className="p-10">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800">
-              Register on StartupOcean
-            </h2>
+            <h2 className="text-3xl font-bold text-gray-800">Register on StartupOcean</h2>
             <p className="text-gray-600 mt-2">
               {step === 1 && 'Step 1 of 3: Enter your basic details'}
               {step === 2 && 'Step 2 of 3: Tell us about your company'}
@@ -198,9 +194,7 @@ const Register = () => {
           {step === 1 && (
             <form onSubmit={handleNextStep} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                 <input
                   type="text"
                   required
@@ -227,9 +221,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Company Name *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
                 <input
                   type="text"
                   required
@@ -241,9 +233,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Register As *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Register As *</label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
@@ -270,8 +260,6 @@ const Register = () => {
               </p>
             </form>
           )}
-
-          {/* STEP 2: Company Details */}
           {step === 2 && (
             <form onSubmit={handleNextStep} className="space-y-6">
               <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-4">
@@ -334,9 +322,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
                 <input
                   type="tel"
                   pattern="[0-9]{10}"
@@ -374,9 +360,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Website
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
                 <input
                   type="url"
                   value={formData.website}
@@ -387,9 +371,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  LinkedIn Page
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn Page</label>
                 <input
                   type="url"
                   value={formData.linkedin}
@@ -400,9 +382,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Facebook
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
                 <input
                   type="url"
                   value={formData.facebook}
@@ -413,9 +393,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Instagram
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
                 <input
                   type="url"
                   value={formData.instagram}
@@ -426,9 +404,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Twitter
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Twitter</label>
                 <input
                   type="url"
                   value={formData.twitter}
@@ -448,10 +424,11 @@ const Register = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={registering}
+
                   className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition disabled:opacity-50"
                 >
-                  {loading ? 'Creating Account...' : 'Complete Registration →'}
+                  {registering ? 'Creating Account...' : 'Complete Registration →'}
                 </button>
               </div>
             </form>

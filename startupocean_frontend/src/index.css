@@ -1,3 +1,227 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* WhatsApp-like Messaging Styles */
+
+/* Smooth scroll behavior */
+.messages-container {
+  scroll-behavior: smooth;
+}
+
+/* Message bubble animations */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.message-bubble-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.message-bubble-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+/* Typing indicator animation */
+@keyframes typing {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.typing-dot {
+  animation: typing 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Pulse animation for notifications */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+.notification-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Smooth transitions */
+.smooth-transition {
+  transition: all 0.3s ease;
+}
+
+/* Custom scrollbar for messages */
+.messages-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.messages-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.messages-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Date separator */
+.date-separator {
+  position: relative;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.date-separator::before,
+.date-separator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.date-separator::before {
+  left: 0;
+}
+
+.date-separator::after {
+  right: 0;
+}
+
+/* Message input focus effect */
+.message-input:focus {
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+/* Send button active effect */
+.send-button:active {
+  transform: scale(0.95);
+}
+
+/* Online status indicator */
+.status-online {
+  width: 12px;
+  height: 12px;
+  background: #10b981;
+  border-radius: 50%;
+  border: 2px solid white;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+/* Message read receipt colors */
+.message-sent {
+  color: #9ca3af;
+}
+
+.message-delivered {
+  color: #6b7280;
+}
+
+.message-read {
+  color: #3b82f6;
+}
+
+/* Hover effects */
+.message-hover:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Loading shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.loading-shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+  background-size: 1000px 100%;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .message-bubble {
+    max-width: 85%;
+  }
+  
+  .chat-container {
+    height: 100vh;
+    border-radius: 0;
+  }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  .messages-container {
+    background-color: #1f2937;
+  }
+  
+  .message-bubble-left {
+    background-color: #374151;
+    color: #f9fafb;
+  }
+  
+  .date-separator::before,
+  .date-separator::after {
+    background: #4b5563;
+  }
+}

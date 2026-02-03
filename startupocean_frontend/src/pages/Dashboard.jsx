@@ -1,14 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { companyAPI, eventAPI, collaborationAPI } from '../services/api';
-import { Briefcase, Calendar, Users, TrendingUp } from 'lucide-react';
+import { Briefcase, Calendar, Users, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8025';
+
+const messageAPI = {
+  getUnreadCount: () => axios.get(`${API_BASE_URL}/messages/unread/count`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  }),
+};
 
 const DashboardPage = () => {
   const [stats, setStats] = useState({
     hasCompany: false,
     upcomingEvents: 0,
     collaborations: 0,
+    unreadMessages: 0,
   });
   const [loading, setLoading] = useState(true);
   const { isAuthenticated, user } = useAuth();
@@ -19,16 +29,18 @@ const DashboardPage = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [companyRes, eventsRes, collabRes] = await Promise.all([
+      const [companyRes, eventsRes, collabRes, messagesRes] = await Promise.all([
         companyAPI.getMyCompany().catch(() => ({ data: { success: false } })),
         eventAPI.getUpcoming().catch(() => ({ data: { data: [] } })),
         collaborationAPI.getReceived().catch(() => ({ data: { data: [] } })),
+        messageAPI.getUnreadCount().catch(() => ({ data: { data: 0 } })),
       ]);
 
       setStats({
         hasCompany: companyRes.data.success,
         upcomingEvents: eventsRes.data.data?.length || 0,
         collaborations: collabRes.data.data?.filter(c => c.status === 'PENDING').length || 0,
+        unreadMessages: messagesRes.data.data || 0,
       });
     } catch {
       console.error('Failed to fetch dashboard data');
@@ -57,7 +69,6 @@ const DashboardPage = () => {
         </div>
       )}
       <h1 className="text-4xl font-bold text-gray-800 mb-8">Dashboard</h1>
-      {/* Quick Stats */}
       <div className="grid md:grid-cols-4 gap-6 mb-8">
         <StatCard
           icon={<Briefcase className="h-8 w-8" />}
@@ -81,15 +92,14 @@ const DashboardPage = () => {
           link="/collaborations"
         />
         <StatCard
-          icon={<TrendingUp className="h-8 w-8" />}
-          title="Network"
-          value="Growing"
-          color="orange"
-          link="/search"
+          icon={<MessageSquare className="h-8 w-8" />}
+          title="Unread Messages"
+          value={stats.unreadMessages}
+          color="teal"
+          link="/messages"
+          badge={stats.unreadMessages > 0}
         />
       </div>
-
-      {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -119,25 +129,36 @@ const DashboardPage = () => {
             link="/collaborations"
             color="purple"
           />
+          <ActionButton
+            title="Messages"
+            description="Chat with your connections"
+            link="/messages"
+            color="teal"
+          />
         </div>
       </div>
     </div>
   );
 };
 
-const StatCard = ({ icon, title, value, color, link }) => {
+const StatCard = ({ icon, title, value, color, link, badge }) => {
   const colorClasses = {
-    blue: 'from-blue-500 to-blue-600',
-    green: 'from-green-500 to-green-600',
-    purple: 'from-purple-500 to-purple-600',
-    orange: 'from-orange-500 to-orange-600',
+    blue: 'from-blue-400 to-blue-500',
+    green: 'from-green-400 to-green-500',
+    purple: 'from-purple-400 to-purple-500',
+    teal: 'from-teal-400 to-teal-500',
   };
 
   return (
     <Link
       to={link}
-      className={`bg-gradient-to-br ${colorClasses[color]} text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition`}
+      className={`bg-gradient-to-br ${colorClasses[color]} text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition relative`}
     >
+      {badge && (
+        <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold animate-pulse">
+          {value > 9 ? '9+' : value}
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         {icon}
       </div>
