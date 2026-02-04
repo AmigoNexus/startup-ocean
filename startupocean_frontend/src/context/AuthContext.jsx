@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
@@ -31,11 +32,11 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success) {
         return true;
       } else {
-        alert(response.data.message || 'Registration failed');
+        toast(response.data.message || 'Registration failed');
         return false;
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'Registration failed');
+      toast(error.response?.data?.message || 'Registration failed');
       return false;
     }
   };
@@ -46,11 +47,11 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success) {
         return true;
       } else {
-        alert(response.data.message || 'Failed to send OTP');
+        toast(response.data.message || 'Failed to send OTP');
         return false;
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to send OTP');
+      toast(error.response?.data?.message || 'Failed to send OTP');
       return false;
     }
   };
@@ -68,7 +69,7 @@ export const AuthProvider = ({ children }) => {
       }
       return false;
     } catch (error) {
-      alert(error.response?.data?.message || 'Invalid OTP');
+      toast(error.response?.data?.message || 'Invalid OTP');
       return false;
     }
   };
@@ -84,11 +85,11 @@ export const AuthProvider = ({ children }) => {
         setUser(userData);
         return true;
       } else {
-        alert(response.data.message || 'OTP verification failed');
+        toast(response.data.message || 'OTP verification failed');
         return false;
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'OTP verification failed');
+      toast(error.response?.data?.message || 'OTP verification failed');
       return false;
     }
   };
