@@ -73,7 +73,7 @@ const Navbar = () => {
                   onClick={() => setOpenMenu(!openMenu)}
                   className="flex items-center gap-2 text-gray-800 px-4 py-2 rounded-full  hover:bg-teal-100 transition"
                 >
-                  <User className="h-5 w-5 text-teal-200" />
+                  <User className="h-5 w-5 text-teal-400" />
                   <ChevronDown className="h-4 w-4" />
                 </button>
                 {openMenu && (

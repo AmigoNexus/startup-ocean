@@ -94,7 +94,6 @@ const ProfilePage = () => {
       setIsEditing(false);
     } catch (err) {
       console.error('Failed to update profile:', err);
-      toast.error('Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }

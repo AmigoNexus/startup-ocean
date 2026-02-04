@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogIn, Mail, ArrowLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Login = () => {
   const [step, setStep] = useState(1);
@@ -26,7 +27,7 @@ const Login = () => {
     const success = await requestLoginOtp(email);
 
     if (!success) {
-      alert("OTP send failed");
+      toast("OTP send failed");
       setStep(1);
     }
 
