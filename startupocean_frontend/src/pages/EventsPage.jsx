@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { eventAPI } from '../services/api';
-import { Calendar, MapPin, Users, Clock, Plus, X, Edit, Trash2, Eye, } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, Plus, X, Edit, Trash2, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -31,10 +31,12 @@ const EventsPage = () => {
             setEvents(response.data.data || []);
         } catch (error) {
             console.error('Fetch events error:', error);
+            toast('Failed to fetch events');
         } finally {
             setLoading(false);
         }
     };
+
     const handleRegister = async (eventId) => {
         if (!isAuthenticated) {
             toast('Please login to register for events');
@@ -44,8 +46,8 @@ const EventsPage = () => {
             await eventAPI.register(eventId);
             toast.success('Successfully registered for event!');
             fetchEvents();
-        } catch {
-            toast('Registration failed');
+        } catch (error) {
+            toast(error.response?.data?.message || 'Registration failed');
         }
     };
 
@@ -54,18 +56,19 @@ const EventsPage = () => {
             await eventAPI.cancelRegistration(eventId);
             toast.success('Registration cancelled successfully');
             fetchEvents();
-        } catch {
-            toast('Failed to cancel registration');
+        } catch (error) {
+            toast(error.response?.data?.message || 'Failed to cancel registration');
         }
     };
+
     const handleDelete = async (eventId) => {
         if (!window.confirm('Are you sure you want to delete this event?')) return;
         try {
             await eventAPI.delete(eventId);
             toast.success('Event deleted successfully');
             fetchEvents();
-        } catch {
-            toast('Failed to delete event');
+        } catch (error) {
+            toast(error.response?.data?.message || 'Failed to delete event');
         }
     };
 
@@ -78,10 +81,11 @@ const EventsPage = () => {
         setSelectedEvent(event);
         setShowParticipantsModal(true);
     };
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
-                <h1 className="text-4xl font-bold text-gray-800">Events</h1>
+                <h1 className="text-3xl font-bold text-gray-800">Events</h1>
 
                 <div className="flex gap-2 items-center flex-wrap">
                     {isAdmin && (
@@ -99,24 +103,27 @@ const EventsPage = () => {
 
                     <button
                         onClick={() => setFilter('upcoming')}
-                        className={`px-6 py-2 rounded-lg transition ${filter === 'upcoming'
+                        className={`px-6 py-2 rounded-lg transition ${
+                            filter === 'upcoming'
                                 ? 'bg-primary-500 text-white shadow-md'
                                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                            }`}
+                        }`}
                     >
                         Upcoming
                     </button>
                     <button
                         onClick={() => setFilter('past')}
-                        className={`px-6 py-2 rounded-lg transition ${filter === 'past'
+                        className={`px-6 py-2 rounded-lg transition ${
+                            filter === 'past'
                                 ? 'bg-primary-500 text-white shadow-md'
                                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                            }`}
+                        }`}
                     >
                         Past
                     </button>
                 </div>
             </div>
+
             {loading ? (
                 <div className="flex justify-center py-16">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
@@ -124,7 +131,7 @@ const EventsPage = () => {
             ) : events.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-lg shadow-md">
                     <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg">No {filter} events found</p>
+                    <p className="text-gray-500 text-base">No {filter} events found</p>
                     {isAdmin && (
                         <button
                             onClick={() => setShowCreateModal(true)}
@@ -157,6 +164,7 @@ const EventsPage = () => {
                     )}
                 </div>
             )}
+
             {showCreateModal && (
                 <EventModal
                     event={editingEvent}
@@ -184,16 +192,17 @@ const EventsPage = () => {
         </div>
     );
 };
+
 const UserEventCard = ({ event, isAuthenticated, onRegister, onCancel }) => {
     const isPast = new Date(event.eventDate) < new Date();
     const isFull =
         event.maxParticipants &&
-        event.registetealParticipants >= event.maxParticipants;
+        event.registeredParticipants >= event.maxParticipants;
 
     return (
         <BaseEventCard event={event}>
             {!isPast && isAuthenticated ? (
-                event.isRegisteteal ? (
+                event.isRegistered ? (
                     <button
                         onClick={() => onCancel(event.eventId)}
                         className="w-full bg-teal-500 text-white py-2 rounded-lg hover:bg-teal-600 transition"
@@ -221,6 +230,7 @@ const UserEventCard = ({ event, isAuthenticated, onRegister, onCancel }) => {
         </BaseEventCard>
     );
 };
+
 const AdminEventCard = ({ event, onEdit, onDelete, onViewParticipants }) => {
     const isPast = new Date(event.eventDate) < new Date();
 
@@ -232,7 +242,7 @@ const AdminEventCard = ({ event, onEdit, onDelete, onViewParticipants }) => {
                     className="w-full bg-teal-500 text-white py-2 rounded-lg hover:bg-teal-600 transition flex items-center justify-center gap-2"
                 >
                     <Eye className="h-4 w-4" />
-                    View Participants ({event.registetealParticipants || 0})
+                    View Participants ({event.registeredParticipants || 0})
                 </button>
                 <div className="flex gap-2">
                     <button
@@ -244,7 +254,7 @@ const AdminEventCard = ({ event, onEdit, onDelete, onViewParticipants }) => {
                     </button>
                     <button
                         onClick={onDelete}
-                        className="flex-1 bg-teal-500 text-white py-2 rounded-lg hover:bg-teal-600 transition flex items-center justify-center gap-2"
+                        className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2"
                     >
                         <Trash2 className="h-4 w-4" />
                         Delete
@@ -259,8 +269,13 @@ const AdminEventCard = ({ event, onEdit, onDelete, onViewParticipants }) => {
         </BaseEventCard>
     );
 };
+
 const BaseEventCard = ({ event, children, isAdmin }) => (
-    <div className={`bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition ${isAdmin ? 'border-2 border-teal-200' : ''}`}>
+    <div
+        className={`bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition ${
+            isAdmin ? 'border-2 border-teal-200' : ''
+        }`}
+    >
         <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
                 <h3 className="text-xl font-bold text-gray-800 mb-2">
@@ -293,8 +308,8 @@ const BaseEventCard = ({ event, children, isAdmin }) => (
             <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 flex-shrink-0" />
                 <span className="font-semibold">
-                    {event.registetealParticipants || 0}
-                    {event.maxParticipants && ` / ${event.maxParticipants}`} registeteal
+                    {event.registeredParticipants || 0}
+                    {event.maxParticipants && ` / ${event.maxParticipants}`} registered
                 </span>
             </div>
         </div>
@@ -302,14 +317,15 @@ const BaseEventCard = ({ event, children, isAdmin }) => (
         {children}
     </div>
 );
+
 const ParticipantsModal = ({ event, onClose }) => (
     <Modal title={`Participants - ${event.eventName}`} onClose={onClose}>
         <div className="mb-6 p-4 bg-primary-50 rounded-lg">
             <div className="flex justify-between items-center">
                 <div>
-                    <p className="text-sm text-gray-600">Total Registeteal</p>
+                    <p className="text-sm text-gray-600">Total Registered</p>
                     <p className="text-3xl font-bold text-primary-600">
-                        {event.registetealParticipants || 0}
+                        {event.registeredParticipants || 0}
                     </p>
                 </div>
                 {event.maxParticipants && (
@@ -327,7 +343,7 @@ const ParticipantsModal = ({ event, onClose }) => (
             <Users className="h-12 w-12 text-gray-300 mx-auto mb-2" />
             <p className="font-medium">Participant Details</p>
             <p className="text-sm mt-2">
-                Backend API requiteal: GET /events/{event.eventId}/participants
+                Backend API required: GET /events/{event.eventId}/participants
             </p>
             <p className="text-xs text-gray-400 mt-2">
                 Will display participant names, emails, and registration status
@@ -342,6 +358,7 @@ const ParticipantsModal = ({ event, onClose }) => (
         </button>
     </Modal>
 );
+
 const EventModal = ({ event, onClose, onSuccess }) => {
     const [formData, setFormData] = useState({
         eventName: event?.eventName || '',
@@ -376,7 +393,10 @@ const EventModal = ({ event, onClose, onSuccess }) => {
             }
             onSuccess();
         } catch (error) {
-            toast(`Failed to ${event ? 'update' : 'create'} event`);
+            toast(
+                error.response?.data?.message ||
+                    `Failed to ${event ? 'update' : 'create'} event`
+            );
             console.error('Event operation error:', error);
         } finally {
             setLoading(false);
@@ -384,11 +404,7 @@ const EventModal = ({ event, onClose, onSuccess }) => {
     };
 
     return (
-        <Modal
-            title={event ? 'Edit Event' : 'Create New Event'}
-            onClose={onClose}
-            large
-        >
+        <Modal title={event ? 'Edit Event' : 'Create New Event'} onClose={onClose} large>
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -396,7 +412,7 @@ const EventModal = ({ event, onClose, onSuccess }) => {
                     </label>
                     <input
                         type="text"
-                        requiteal
+                        required
                         placeholder="Enter event name"
                         value={formData.eventName}
                         onChange={(e) =>
@@ -427,7 +443,7 @@ const EventModal = ({ event, onClose, onSuccess }) => {
                     </label>
                     <input
                         type="datetime-local"
-                        requiteal
+                        required
                         value={formData.eventDate}
                         onChange={(e) =>
                             setFormData({ ...formData, eventDate: e.target.value })
@@ -462,7 +478,10 @@ const EventModal = ({ event, onClose, onSuccess }) => {
                             placeholder="Leave empty for unlimited"
                             value={formData.maxParticipants}
                             onChange={(e) =>
-                                setFormData({ ...formData, maxParticipants: e.target.value })
+                                setFormData({
+                                    ...formData,
+                                    maxParticipants: e.target.value,
+                                })
                             }
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
@@ -498,18 +517,26 @@ const EventModal = ({ event, onClose, onSuccess }) => {
                         className="flex-1 bg-primary-500 text-white py-3 rounded-lg font-semibold hover:bg-primary-600 transition disabled:opacity-50"
                     >
                         {loading
-                            ? (event ? 'Updating...' : 'Creating...')
-                            : (event ? 'Update Event' : 'Create Event')
-                        }
+                            ? event
+                                ? 'Updating...'
+                                : 'Creating...'
+                            : event
+                            ? 'Update Event'
+                            : 'Create Event'}
                     </button>
                 </div>
             </form>
         </Modal>
     );
 };
+
 const Modal = ({ title, children, onClose, large }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className={`bg-white rounded-lg p-8 w-full max-h-[90vh] overflow-y-auto ${large ? 'max-w-2xl' : 'max-w-xl'}`}>
+        <div
+            className={`bg-white rounded-lg p-8 w-full max-h-[90vh] overflow-y-auto ${
+                large ? 'max-w-2xl' : 'max-w-xl'
+            }`}
+        >
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
                 <button

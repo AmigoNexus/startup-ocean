@@ -78,16 +78,20 @@ export default function StartupTrendingNewsMini() {
 
   if (loading) {
     return (
-      <div className="p-6 text-center text-gray-500">
-        Loading Trending News...
+      <div className="container mx-auto px-4  ">
+        <div className="p-6 text-center text-gray-500">
+          Loading Trending News...
+        </div>
       </div>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="p-6 text-center text-red-500">
-        News not available right now.
+      <div className="container mx-auto px-4  ">
+        <div className="p-6 text-center text-red-500">
+          News not available right now.
+        </div>
       </div>
     );
   }
@@ -95,11 +99,12 @@ export default function StartupTrendingNewsMini() {
   const item = items[current];
 
   return (
-    <div
+    <div className="container mx-auto px-4  ">
+      <div
       onClick={() => handleClick(item)}
       className="bg-white rounded-xl shadow-md border p-5 cursor-pointer hover:shadow-lg transition"
     >
-      <h3 className="text-lg font-bold text-center text-teal-600 mb-4">
+      <h3 className="text-base font-bold text-center text-teal-600 mb-4">
         Trending Updates
       </h3>
       {item.isAd && (
@@ -107,10 +112,10 @@ export default function StartupTrendingNewsMini() {
           StartupOcean
         </p>
       )}
-      <h2 className="text-md font-semibold text-gray-800 mb-3 line-clamp-2">
+      <h2 className="text-sm font-semibold text-gray-800 mb-3 line-clamp-2">
         {item.title}
       </h2>
-      <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+      <p className="text-xs text-gray-600 mb-4 line-clamp-3">
         {item.description}...
       </p>
       <div className="flex justify-center items-center gap-2 text-sm font-semibold text-teal-600">
@@ -126,6 +131,7 @@ export default function StartupTrendingNewsMini() {
           />
         ))}
       </div>
+    </div>
     </div>
   );
 }

@@ -58,17 +58,17 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-1">
+    <div className="container mx-auto px-4 py-1  ">
       {isAuthenticated && (
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white py-4 mb-8 rounded-lg shadow-md">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-semibold text-center">
+            <h2 className="text-xl font-semibold text-center">
               Welcome, <span className="font-bold">{user?.name || user?.email}</span>!
             </h2>
           </div>
         </div>
       )}
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">Dashboard</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
       <div className="grid md:grid-cols-4 gap-6 mb-8">
         <StatCard
           icon={<Briefcase className="h-8 w-8" />}
@@ -101,7 +101,7 @@ const DashboardPage = () => {
         />
       </div>
       <div className="bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
+        <h2 className="text-lg font-bold text-gray-800 mb-6">Quick Actions</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {!stats.hasCompany && (
             <ActionButton
@@ -162,8 +162,8 @@ const StatCard = ({ icon, title, value, color, link, badge }) => {
       <div className="flex items-center justify-between mb-4">
         {icon}
       </div>
-      <h3 className="text-lg font-semibold mb-1">{title}</h3>
-      <p className="text-3xl font-bold">{value}</p>
+      <h3 className="text-base font-semibold mb-1">{title}</h3>
+      <p className="text-2xl font-bold">{value}</p>
     </Link>
   );
 };
@@ -174,8 +174,8 @@ const ActionButton = ({ title, description, link }) => {
       to={link}
       className="block bg-gray-50 hover:bg-gray-100 p-6 rounded-lg border-2 border-gray-200 hover:border-primary-500 transition"
     >
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">{title}</h3>
-      <p className="text-gray-600 text-sm">{description}</p>
+      <h3 className="text-base font-semibold text-gray-800 mb-2">{title}</h3>
+      <p className="text-gray-600 text-xs">{description}</p>
     </Link>
   );
 };

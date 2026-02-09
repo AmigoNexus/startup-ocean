@@ -116,16 +116,16 @@ export default function StartupTrendingNews() {
 
     return (
         <section className="py-12 bg-gradient-to-b from-gray-50 to-white">
-            <div className="container px-4 mx-auto mb-8">
+            <div className="container px-4 mx-auto mb-8  ">
                 <div className="flex flex-col items-center mb-16 text-center">
                     <div className="flex items-center gap-2 px-4 py-2 mb-4 text-sm font-semibold text-teal-600 bg-teal-100 rounded-full">
                         <Rocket size={16} />
                         Latest Updates
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-900 sm:text-3xl">
+                    <h2 className="text-2xl font-bold text-gray-900 sm:text-2xl">
                         What's <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-teal-600">Trending</span> in Startups
                     </h2>
-                    <p className="max-w-2xl mt-4 text-lg text-gray-600">
+                    <p className="max-w-2xl mt-4 text-sm text-gray-600">
                         Stay ahead with the latest news on startups, innovation, technology, and entrepreneurship from around the world.
                     </p>
                 </div>
@@ -175,10 +175,10 @@ export default function StartupTrendingNews() {
                                                 })}
                                             </span>
                                         </div>
-                                        <h3 className="mb-3 text-xl font-bold text-gray-900 line-clamp-2 group-hover:text-teal-600 transition-colors">
+                                        <h3 className="mb-3 text-base font-bold text-gray-900 line-clamp-2 group-hover:text-teal-600 transition-colors">
                                             {item.title}
                                         </h3>
-                                        <p className="mb-6 text-sm leading-relaxed text-gray-600 line-clamp-3">
+                                        <p className="mb-6 text-xs leading-relaxed text-gray-600 line-clamp-3">
                                             {item.description}
                                         </p>
                                         <div className="mt-auto">

@@ -131,15 +131,15 @@ const SearchPage = () => {
     : companies.filter(c => c.companyType === companyType);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">Search Companies</h1>
+    <div className="container mx-auto px-4 py-8  ">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Search Companies</h1>
 
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
         <div className="flex flex-col md:flex-row gap-4">
           <select
             value={companyType}
             onChange={(e) => setCompanyType(e.target.value)}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
           >
             <option value="ALL">All Companies</option>
             <option value="STARTUP">Startups</option>
@@ -153,11 +153,11 @@ const SearchPage = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
             />
             <button
               onClick={handleSearch}
-              className="bg-teal-400 text-white px-6 py-3 rounded-lg hover:bg-teal-500 transition flex items-center gap-2"
+              className="bg-teal-400 text-white px-4 py-2 rounded-lg hover:bg-teal-500 transition flex items-center gap-2 text-sm"
             >
               <Search className="h-5 w-5" />
               Search
@@ -187,8 +187,8 @@ const SearchPage = () => {
       {!loading && filteredCompanies.length === 0 && (
         <div className="text-center py-12 bg-white rounded-lg shadow-md">
           <Briefcase className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">No companies found</p>
-          <p className="text-gray-400 text-sm mt-2">
+          <p className="text-gray-500 text-base">No companies found</p>
+          <p className="text-gray-400 text-xs mt-2">
             Try adjusting your search or filter criteria
           </p>
         </div>

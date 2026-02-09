@@ -71,7 +71,7 @@ const HomePage = () => {
       {isAuthenticated && (
         <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white py-2">
           <div className="container mx-auto px-3">
-            <h2 className="text-2xl font-semibold text-center">
+            <h2 className="text-lg font-semibold text-center">
               Welcome, <span className="font-bold">{user?.name || user?.email}</span>!
             </h2>
           </div>
@@ -79,10 +79,10 @@ const HomePage = () => {
       )}
       <section className={`bg-gradient-to-r from-primary-400 to-primary-500 text-white py-5 ${!isAuthenticated ? 'mt-' : ''}`}>
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold mb-4">
+          <h1 className="text-2xl font-bold mb-4">
             Startup Collaboration & Services Portal
           </h1>
-          <p className="text-xl mb-4 max-w-2xl mx-auto">
+          <p className="text-base mb-4 max-w-2xl mx-auto">
             Connecting Startups & Service Providers Under One Umbrella<br />
             Platform Created for Startup. Service Providers. Founders. Investors.
           </p>
@@ -90,58 +90,56 @@ const HomePage = () => {
       </section>
 
       <section className="py-5 bg-white">
-        <div className="container mx-auto px-2">
-          <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+        <div className="container mx-auto px-4">
+          <h2 className="text-xl font-bold text-center text-gray-800 mb-6">
             What Are You Looking For?
           </h2>
-          <div className="flex flex-col lg:flex-row gap-8 items-start">
-            <div className="grid md:grid-cols-2 gap-8 flex-1">
+          <div className="flex flex-col lg:flex-row gap-8 items-stretch">
+            <div className="grid md:grid-cols-2 gap-8 flex-1 w-auto shrink-0 h-full">
 
               <Link
                 to="/search?type=STARTUP"
-                className="bg-gradient-to-br from-blue-100 to-blue-100 p-8 rounded-xl shadow-lg hover:shadow-xl transition group"
+                className="h-full bg-gradient-to-br from-blue-100 to-blue-100 p-8 rounded-xl shadow-lg hover:shadow-xl transition group"
               >
                 <div className="flex items-center justify-center w-16 h-16 bg-blue-500 text-white rounded-full mb-4 group-hover:scale-110 transition">
                   <Briefcase className="h-8 w-8" />
                 </div>
 
-                <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                <h3 className="text-lg font-bold text-gray-800 mb-3">
                   Looking Startup for Collaboration
                 </h3>
 
-                <p className="text-gray-600">
+                <p className="text-sm text-gray-600">
                   Connect and collaborate with other startups.
                 </p>
               </Link>
 
               <Link
                 to="/search?type=SERVICE_PROVIDER"
-                className="bg-gradient-to-br from-green-100 to-green-100 p-8 rounded-xl shadow-lg hover:shadow-xl transition group"
+                className="h-full bg-gradient-to-br from-green-100 to-green-100 p-8 rounded-xl shadow-lg hover:shadow-xl transition group"
               >
                 <div className="flex items-center justify-center w-16 h-16 bg-green-500 text-white rounded-full mb-4 group-hover:scale-110 transition">
                   <Users className="h-8 w-8" />
                 </div>
 
-                <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                <h3 className="text-lg font-bold text-gray-800 mb-3">
                   Service Providers
                 </h3>
 
-                <p className="text-gray-600">
+                <p className="text-sm text-gray-600">
                   Find consultants to scale your startup.
                 </p>
               </Link>
             </div>
-            <div className="w-full lg:w-[380px] shrink-0">
-              <div className="rounded-xl shadow-lg border bg-white p-4">
-                <StartupTrendingNewsMini />
-              </div>
+            <div className="w-full lg:w-[380px] shrink-0 h-full">
+              <StartupTrendingNewsMini />
             </div>
           </div>
         </div>
       </section>
       <section className="py-5 bg-gray-50">
-        <div className="container mx-auto px-3">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+        <div className="container mx-auto px-3 ">
+          <h2 className="text-xl font-bold text-center text-gray-800 mb-6">
             What We Do
           </h2>
           <div className="grid md:grid-cols-4 gap-8">
@@ -171,15 +169,15 @@ const HomePage = () => {
                 <div className="flex justify-center text-primary-500 mb-4">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.desc}</p>
+                <h3 className="text-base font-semibold mb-2">{feature.title}</h3>
+                <p className="text-sm text-gray-600">{feature.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
       <section className="py-16 bg-gradient-to-br from-teal-50 to-blue-50">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 ">
           {/* <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-800 mb-4">
               What Our Community Says
@@ -220,7 +218,7 @@ const HomePage = () => {
             ))}
           </div> */}
           <div className="text-center mt-12">
-            <p className="text-gray-700 text-lg mb-4">
+            <p className="text-gray-700 text-base mb-4">
               Join startups and service providers already growing their business
             </p>
             <button className="bg-teal-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-teal-700 transition shadow-lg">
@@ -235,8 +233,8 @@ const HomePage = () => {
         </div>
       </section>
       <section className="py-10 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+        <div className="container mx-auto px-4 ">
+          <h2 className="text-xl font-bold text-center text-gray-800 mb-12">
             Benefits of Registering
           </h2>
           <div className="max-w-3xl mx-auto space-y-4">
@@ -251,19 +249,19 @@ const HomePage = () => {
                 <div className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                   ✓
                 </div>
-                <p className="text-gray-700">{benefit}</p>
+                <p className="text-sm text-gray-700">{benefit}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
       <section className="py-10 bg-gray-50">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 ">
           <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
             <div className="flex items-center justify-center mb-6">
               <Mail className="h-12 w-12 text-primary-500" />
             </div>
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">
+            <h2 className="text-xl font-bold text-center text-gray-800 mb-8">
               Submit an Enquiry
             </h2>
             <form onSubmit={handleSubmitEnquiry} className="space-y-4">
