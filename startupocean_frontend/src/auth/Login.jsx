@@ -89,7 +89,7 @@ const Login = () => {
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="flex flex-col items-center mb-8">
           <LogIn className="h-12 w-12 text-teal-400 mb-4" />
-          <h2 className="text-3xl font-bold text-gray-800">Login</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Login</h2>
           <p className="text-gray-600 mt-2">
             {step === 1 ? 'Enter your email to continue' : 'Enter OTP sent to your email'}
           </p>
@@ -141,7 +141,7 @@ const Login = () => {
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-center text-3xl tracking-widest font-semibold"
+                className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-center text-2xl tracking-widest font-semibold"
                 placeholder="000000"
                 autoFocus
               />

@@ -76,6 +76,7 @@ const ProfilePage = () => {
           companyType: user.company.companyType,
           offerings: user.company.offerings || [],
           socialLinks: user.company.socialLinks || {},
+          phoneNumber: formData.phoneNumber,
         };
         await companyAPI.update(user.company.companyId, companyPayload);
         const updatedCompany = {

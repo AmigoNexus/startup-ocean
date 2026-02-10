@@ -5,7 +5,7 @@ export const startupOceanAds = [
     {
         id: "startup-ad-1",
         type: "promo",
-        title: "Connect with India's Top Startups on StartupOcean!",
+        title: "Connect with India's Startups on StartupOcean!",
         description:
             "Discover innovative startups, find collaboration opportunities, and grow your network. Join thousands of entrepreneurs building the future together.",
         ctaText: "Explore Startups",

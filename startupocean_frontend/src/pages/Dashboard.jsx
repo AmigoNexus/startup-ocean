@@ -68,7 +68,7 @@ const DashboardPage = () => {
           </div>
         </div>
       )}
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-8">Dashboard</h1>
       <div className="grid md:grid-cols-4 gap-6 mb-8">
         <StatCard
           icon={<Briefcase className="h-8 w-8" />}

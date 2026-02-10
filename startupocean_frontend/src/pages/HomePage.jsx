@@ -95,7 +95,7 @@ const HomePage = () => {
             What Are You Looking For?
           </h2>
           <div className="flex flex-col lg:flex-row gap-8 items-stretch">
-            <div className="grid md:grid-cols-2 gap-8 flex-1 w-auto shrink-0 h-full">
+            <div className="grid md:grid-cols-2 gap-8 flex-1 w-auto h-auto shrink-0">
 
               <Link
                 to="/search?type=STARTUP"
@@ -237,7 +237,7 @@ const HomePage = () => {
           <h2 className="text-xl font-bold text-center text-gray-800 mb-12">
             Benefits of Registering
           </h2>
-          <div className="max-w-3xl mx-auto space-y-4">
+          <div className="max-w-2xl mx-auto space-y-4">
             {[
               'Visibility among verified startups and consultants',
               'Business collaboration opportunities',

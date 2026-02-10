@@ -85,7 +85,7 @@ const EventsPage = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">Events</h1>
+                <h1 className="text-2xl font-bold text-gray-800">Events</h1>
 
                 <div className="flex gap-2 items-center flex-wrap">
                     {isAdmin && (
@@ -193,7 +193,7 @@ const EventsPage = () => {
     );
 };
 
-const UserEventCard = ({ event, isAuthenticated, onRegister, onCancel }) => {
+const UserEventCard = ({ event, isAuthenticated, onCancel }) => {
     const isPast = new Date(event.eventDate) < new Date();
     const isFull =
         event.maxParticipants &&
@@ -209,18 +209,10 @@ const UserEventCard = ({ event, isAuthenticated, onRegister, onCancel }) => {
                     >
                         Cancel Registration
                     </button>
-                ) : (
-                    <button
-                        onClick={() => onRegister(event.eventId)}
-                        disabled={isFull}
-                        className="w-full bg-primary-500 text-white py-2 rounded-lg hover:bg-primary-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isFull ? 'Event Full' : 'Register Now'}
-                    </button>
-                )
+                ) : null
             ) : !isPast && !isAuthenticated ? (
                 <p className="text-center text-gray-500 text-sm py-2">
-                    Login to register for this event
+                    Login to view event details
                 </p>
             ) : isPast ? (
                 <div className="text-center text-sm text-white bg-gray-500 py-2 rounded-lg">
@@ -305,13 +297,13 @@ const BaseEventCard = ({ event, children, isAdmin }) => (
                     <span className="truncate">{event.location}</span>
                 </div>
             )}
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 flex-shrink-0" />
                 <span className="font-semibold">
                     {event.registeredParticipants || 0}
                     {event.maxParticipants && ` / ${event.maxParticipants}`} registered
                 </span>
-            </div>
+            </div> */}
         </div>
 
         {children}
@@ -324,14 +316,14 @@ const ParticipantsModal = ({ event, onClose }) => (
             <div className="flex justify-between items-center">
                 <div>
                     <p className="text-sm text-gray-600">Total Registered</p>
-                    <p className="text-3xl font-bold text-primary-600">
+                    <p className="text-2xl font-bold text-primary-600">
                         {event.registeredParticipants || 0}
                     </p>
                 </div>
                 {event.maxParticipants && (
                     <div>
                         <p className="text-sm text-gray-600">Max Capacity</p>
-                        <p className="text-3xl font-bold text-gray-700">
+                        <p className="text-2xl font-bold text-gray-700">
                             {event.maxParticipants}
                         </p>
                     </div>
@@ -342,12 +334,12 @@ const ParticipantsModal = ({ event, onClose }) => (
         <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
             <Users className="h-12 w-12 text-gray-300 mx-auto mb-2" />
             <p className="font-medium">Participant Details</p>
-            <p className="text-sm mt-2">
-                Backend API required: GET /events/{event.eventId}/participants
+            {/* <p className="text-sm mt-2">
+                Backend API required: GET /events/{event.eventName}/participants
             </p>
             <p className="text-xs text-gray-400 mt-2">
                 Will display participant names, emails, and registration status
-            </p>
+            </p> */}
         </div>
 
         <button

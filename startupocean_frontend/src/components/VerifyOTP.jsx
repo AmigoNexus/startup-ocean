@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { authAPI, companyAPI } from '../services/api';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const VerifyOTP = () => {
   const [otp, setOtp] = useState('');
@@ -11,6 +12,8 @@ const VerifyOTP = () => {
   const [canResend, setCanResend] = useState(false);
   const [error, setError] = useState('');
   const [verified, setVerified] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const { setUser } = useAuth();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,9 +28,16 @@ const VerifyOTP = () => {
       navigate('/register', { replace: true });
       return;
     }
-    startCountdown();
+
+    // Simulate OTP sending - in a real app, this might be called
+    // Show loading for 1-2 seconds, then show the OTP input
+    const otpTimer = setTimeout(() => {
+      setOtpSent(true);
+      startCountdown();
+    }, 1500);
 
     return () => {
+      clearTimeout(otpTimer);
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
@@ -72,6 +82,7 @@ const VerifyOTP = () => {
       const { token, ...userData } = response.data.data;
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
       const pendingData = localStorage.getItem('pendingCompanyData');
 
       if (pendingData && companyName) {
@@ -85,6 +96,7 @@ const VerifyOTP = () => {
               ? companyData.offerings
               : ['General'],
             socialLinks: companyData.socialLinks || {},
+            phoneNumber: companyData.phoneNumber || null,
           };
           await companyAPI.create(payload);
           toast.success('Account created and company profile saved!');
@@ -159,12 +171,32 @@ const VerifyOTP = () => {
       </div>
     );
   }
+  if (verified) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="flex justify-center mb-6">
+            <CheckCircle className="h-20 w-20 text-teal-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Registration Complete!
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Your account and company profile have been set up successfully. Redirecting to dashboard...
+          </p>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-400"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="flex flex-col items-center mb-8">
           <Mail className="h-16 w-16 text-teal-400 mb-4" />
-          <h2 className="text-3xl font-bold text-gray-800">Verify Your Email</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Verify Your Email</h2>
           <p className="text-gray-600 mt-2 text-center">
             We've sent a 6-digit OTP to
           </p>
@@ -189,7 +221,7 @@ const VerifyOTP = () => {
                 setOtp(e.target.value.replace(/\D/g, ''));
                 setError('');
               }}
-              className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-center text-3xl tracking-widest font-semibold"
+              className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-center text-2xl tracking-widest font-semibold"
               placeholder="000000"
               autoFocus
             />

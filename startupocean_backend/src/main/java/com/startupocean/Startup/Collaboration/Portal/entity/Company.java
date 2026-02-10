@@ -56,6 +56,9 @@ public class Company {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
     public void softDelete() {
         this.isActive = false;
         this.deletedAt = LocalDateTime.now();

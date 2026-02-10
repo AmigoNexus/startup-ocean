@@ -60,6 +60,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setRegistering(true);
     setLoading(true);
     setError('');
 
@@ -100,6 +101,7 @@ const Register = () => {
       }
     } catch (error) {
       console.error('Registration error:', error);
+      setRegistering(false);
 
       if (error.response?.data?.message) {
         setError(error.response.data.message);
@@ -140,9 +142,9 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4">
       <div className="w-full max-w-6xl bg-white shadow-2xl rounded-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
 
-        <div className="bg-gradient-to-b from-teal-600 to-teal-700 text-white p-10 flex flex-col justify-center">
-          <h2 className="text-3xl font-bold mb-4">Registration Guide</h2>
-          <p className="text-teal-100 mb-10">
+        <div className="bg-gradient-to-b from-teal-600 to-teal-700 text-white p-10 flex flex-col ">
+          <h2 className="text-xl sm:text-2xl md:text-2xl font-bold mb-4">Registration Guide</h2>
+          <p className="text-xs sm:text-sm text-teal-100 mb-10">
             Complete your StartupOcean registration in 3 easy steps.
           </p>
 
@@ -166,21 +168,21 @@ const Register = () => {
                   {s.icon}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg">{s.title}</h3>
-                  <p className="text-sm opacity-90">{s.desc}</p>
+                  <h3 className="font-semibold text-sm sm:text-base md:text-lg">{s.title}</h3>
+                  <p className="text-xs sm:text-sm opacity-90">{s.desc}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <p className="mt-12 text-sm text-teal-200">
+          <p className="mt-12 text-xs sm:text-sm text-teal-200">
             Step {step} of 3 • StartupOcean Registration
           </p>
         </div>
         <div className="p-10">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800">Register on StartupOcean</h2>
-            <p className="text-gray-600 mt-2">
+          <div className="text-center ">
+            <h2 className="text-xl sm:text-2xl md:text-2xl font-bold text-gray-800">Register on StartupOcean</h2>
+            <p className="text-xs sm:text-sm text-gray-600 mt-2">
               {step === 1 && 'Step 1 of 3: Enter your basic details'}
               {step === 2 && 'Step 2 of 3: Tell us about your company'}
               {step === 3 && 'Step 3 of 3: Add your social media links'}
@@ -188,13 +190,13 @@ const Register = () => {
           </div>
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-800">{error}</p>
+              <p className="text-xs sm:text-sm text-red-800">{error}</p>
             </div>
           )}
           {step === 1 && (
             <form onSubmit={handleNextStep} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                 <input
                   type="text"
                   required
@@ -206,7 +208,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   Email Address (OTP Based) *
                 </label>
                 <input
@@ -217,11 +219,11 @@ const Register = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   placeholder="your.email@example.com"
                 />
-                <p className="text-xs text-gray-500 mt-1">OTP will be sent to this email for verification</p>
+                <p className="text-xs sm:text-xs text-gray-500 mt-1">OTP will be sent to this email for verification</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Company Name *</label>
                 <input
                   type="text"
                   required
@@ -233,7 +235,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Register As *</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Register As *</label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
@@ -252,7 +254,7 @@ const Register = () => {
                 Next: Company Details →
               </button>
 
-              <p className="text-center text-gray-600 mt-6">
+              <p className="text-center text-xs sm:text-sm text-gray-600 mt-6">
                 Already have an account?{' '}
                 <a href="/login" className="text-teal-600 font-semibold hover:underline">
                   Login here
@@ -263,13 +265,13 @@ const Register = () => {
           {step === 2 && (
             <form onSubmit={handleNextStep} className="space-y-6">
               <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-4">
-                <p className="text-sm text-teal-800">
+                <p className="text-xs sm:text-sm text-teal-800">
                   ℹ️ The following information is optional. You can complete it now or later from your profile.
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   Description (Max 150 chars)
                 </label>
                 <textarea
@@ -280,13 +282,13 @@ const Register = () => {
                   rows={3}
                   placeholder="Short description (2-3 lines)"
                 />
-                <p className="text-xs text-gray-500 mt-1 text-right">
+                <p className="text-xs sm:text-xs text-gray-500 mt-1 text-right">
                   {formData.description.length}/150
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   Offerings / Specialization
                 </label>
                 <div className="space-y-3">
@@ -322,7 +324,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Phone Number</label>
                 <input
                   type="tel"
                   pattern="[0-9]{10}"
@@ -354,13 +356,13 @@ const Register = () => {
           {step === 3 && (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-4">
-                <p className="text-sm text-teal-800">
+                <p className="text-xs sm:text-sm text-teal-800">
                   ℹ️ Add your social media profiles to help others connect with you (Optional)
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Website</label>
                 <input
                   type="url"
                   value={formData.website}
@@ -371,7 +373,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn Page</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">LinkedIn Page</label>
                 <input
                   type="url"
                   value={formData.linkedin}
@@ -382,7 +384,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Facebook</label>
                 <input
                   type="url"
                   value={formData.facebook}
@@ -393,7 +395,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Instagram</label>
                 <input
                   type="url"
                   value={formData.instagram}
@@ -404,7 +406,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Twitter</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Twitter</label>
                 <input
                   type="url"
                   value={formData.twitter}

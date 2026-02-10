@@ -349,9 +349,9 @@ const CollaborationDetailsModal = ({ collaboration, type, onClose, onAccept, onR
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-3xl w-full p-8 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-start mb-6">
-          <h2 className="text-3xl font-bold text-gray-800">Collaboration Details</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Collaboration Details</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
