@@ -39,6 +39,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // Frontend allowed origins
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "http://startupocean.in",

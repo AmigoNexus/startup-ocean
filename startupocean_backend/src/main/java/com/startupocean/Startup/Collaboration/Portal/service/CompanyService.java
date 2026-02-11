@@ -96,8 +96,7 @@ public class CompanyService {
 
         Company updatedCompany = companyRepository.save(company);
         List<Offering> existingOfferings = offeringRepository.findByCompanyAndIsActiveTrue(company);
-        existingOfferings.forEach(Offering::softDelete);
-        offeringRepository.saveAll(existingOfferings);
+        offeringRepository.deleteAll(existingOfferings);
 
         if (request.getOfferings() != null && !request.getOfferings().isEmpty()) {
             for (String offeringName : request.getOfferings()) {
