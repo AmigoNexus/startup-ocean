@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { collaborationAPI, companyAPI } from '../services/api';
-import { Send, Inbox, CheckCircle, XCircle, Briefcase, MessageSquare, X } from 'lucide-react';
+import { Send, Inbox, CheckCircle, XCircle, Briefcase, MessageSquare, X, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import EnhancedMessagingModal from '../components/EnhancedMessagingModal';
@@ -12,6 +12,8 @@ const CollaborationsPage = () => {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showMessagingModal, setShowMessagingModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
   const [selectedCollaboration, setSelectedCollaboration] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [requestForm, setRequestForm] = useState({
@@ -48,32 +50,46 @@ const CollaborationsPage = () => {
   };
 
   const handleAccept = async (collaborationId) => {
-    if (!window.confirm('Are you sure you want to accept this collaboration request?')) {
-      return;
-    }
-
-    try {
-      await collaborationAPI.accept(collaborationId);
-      toast.success('Collaboration request accepted!');
-      fetchCollaborations();
-      setShowDetailsModal(false);
-    } catch (error) {
-      console.error('Error accepting collaboration:', error);
-    }
+    setConfirmAction({
+      type: 'accept',
+      collaborationId,
+      title: 'Accept Collaboration Request',
+      message: 'Are you sure you want to accept this collaboration request? You will be able to start messaging with this company.',
+      confirmText: 'Accept',
+      confirmClass: 'bg-green-600 hover:bg-green-700',
+      icon: <CheckCircle className="h-12 w-12 text-green-600" />
+    });
+    setShowConfirmModal(true);
   };
 
   const handleReject = async (collaborationId) => {
-    if (!window.confirm('Are you sure you want to reject this collaboration request?')) {
-      return;
-    }
+    setConfirmAction({
+      type: 'reject',
+      collaborationId,
+      title: 'Reject Collaboration Request',
+      message: 'Are you sure you want to reject this collaboration request? This action cannot be undone.',
+      confirmText: 'Reject',
+      confirmClass: 'bg-red-600 hover:bg-red-700',
+      icon: <XCircle className="h-12 w-12 text-red-600" />
+    });
+    setShowConfirmModal(true);
+  };
 
+  const executeAction = async () => {
     try {
-      await collaborationAPI.reject(collaborationId);
-      toast.success('Collaboration request rejected');
+      if (confirmAction.type === 'accept') {
+        await collaborationAPI.accept(confirmAction.collaborationId);
+        toast.success('Collaboration request accepted!');
+      } else if (confirmAction.type === 'reject') {
+        await collaborationAPI.reject(confirmAction.collaborationId);
+        toast.success('Collaboration request rejected');
+      }
       fetchCollaborations();
       setShowDetailsModal(false);
+      setShowConfirmModal(false);
     } catch (error) {
-      console.error('Error rejecting collaboration:', error);
+      console.error('Error processing collaboration:', error);
+      toast.error('Failed to process request');
     }
   };
 
@@ -256,6 +272,55 @@ const CollaborationsPage = () => {
           onClose={() => setShowMessagingModal(false)}
         />
       )}
+
+      {showConfirmModal && confirmAction && (
+        <ConfirmationModal
+          title={confirmAction.title}
+          message={confirmAction.message}
+          confirmText={confirmAction.confirmText}
+          confirmClass={confirmAction.confirmClass}
+          icon={confirmAction.icon}
+          onConfirm={executeAction}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+const ConfirmationModal = ({ title, message, confirmText, confirmClass, icon, onConfirm, onCancel }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 animate-fadeIn">
+      <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl transform transition-all animate-slideUp">
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4 animate-bounce">
+            {icon}
+          </div>
+
+          <h3 className="text-2xl font-bold text-gray-800 mb-3">
+            {title}
+          </h3>
+
+          <p className="text-gray-600 mb-8 leading-relaxed">
+            {message}
+          </p>
+
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={onCancel}
+              className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-semibold"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              className={`flex-1 px-6 py-3 text-white rounded-lg transition font-semibold ${confirmClass}`}
+            >
+              {confirmText}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

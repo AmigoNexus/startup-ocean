@@ -14,6 +14,8 @@ const SearchPage = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [connectMessage, setConnectMessage] = useState('');
+  const [sendingRequest, setSendingRequest] = useState(false);
+
 
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -112,6 +114,7 @@ const SearchPage = () => {
 
   const handleConnect = async () => {
     try {
+      setSendingRequest(true);
       await collaborationAPI.send({
         targetCompanyId: selectedCompany.companyId,
         message: connectMessage
@@ -123,6 +126,8 @@ const SearchPage = () => {
     } catch (error) {
       console.error('Failed to send request:', error);
       toast('Failed to send request');
+    } finally {
+      setSendingRequest(false);
     }
   };
 
@@ -243,9 +248,17 @@ const SearchPage = () => {
             <div className="flex gap-4">
               <button
                 onClick={handleConnect}
-                className="flex-1 bg-teal-400 text-white py-3 rounded-lg hover:bg-teal-500 transition font-semibold"
-              >
-                Send Request
+                disabled={sendingRequest}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition
+                ${sendingRequest ? 'bg-teal-300 cursor-not-allowed'  : 'bg-teal-400 hover:bg-teal-500 text-white'} `} >
+                {sendingRequest ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Sending...
+                  </>
+                ) : (
+                  'Send Request'
+                )}
               </button>
               <button
                 onClick={() => setShowConnectModal(false)}
