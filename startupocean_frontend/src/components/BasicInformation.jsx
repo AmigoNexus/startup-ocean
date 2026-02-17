@@ -174,25 +174,76 @@ const BasicInformation = ({
       </div>
 
       {/* City */}
-      <div>
+      <div className="relative overflow-visible">
         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">City</label>
         {citiesLoading ? (
-          <div className="text-xs text-gray-500">Loading cities...</div>
+          <div className="text-xs text-gray-500 animate-pulse bg-gray-100 p-3 rounded-lg">Loading cities...</div>
         ) : citiesError ? (
-          <div className="text-xs text-red-600">{citiesError}</div>
+          <div className="text-xs text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">{citiesError}</div>
         ) : (
-          <select
-            value={formData.city || ''}
-            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-          >
-            <option value="">Select City</option>
-            {cities.map((c) => (
-              <option key={c.cityId} value={c.cityName}>
-                {c.cityName}
-              </option>
-            ))}
-          </select>
+          <div className="relative overflow-visible">
+            <input
+              type="text"
+              placeholder="Search or select city..."
+              value={formData.city || ''}
+              autoComplete="off"
+              onFocus={() => {
+                // If focused, open the dropdown and overlay
+                const dropdown = document.getElementById('city-dropdown');
+                const overlay = document.getElementById('city-dropdown-overlay');
+                if (dropdown) dropdown.classList.remove('hidden');
+                if (overlay) overlay.classList.remove('hidden');
+              }}
+              onChange={(e) => {
+                setFormData({ ...formData, city: e.target.value });
+              }}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
+            />
+            <div
+              id="city-dropdown"
+              className="absolute z-[100] mt-1 w-full max-h-60 bg-white border border-gray-200 rounded-lg shadow-xl overflow-y-auto hidden animate-in fade-in slide-in-from-top-2 duration-200"
+            >
+              <div className="p-2 sticky top-0 bg-white border-b border-gray-100">
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider px-2 py-1">Available Cities</p>
+              </div>
+              {cities.filter(c =>
+                !formData.city || c.cityName.toLowerCase().includes(formData.city.toLowerCase())
+              ).length > 0 ? (
+                cities.filter(c =>
+                  !formData.city || c.cityName.toLowerCase().includes(formData.city.toLowerCase())
+                ).map((c) => (
+                  <button
+                    key={c.cityId}
+                    type="button"
+                    onClick={() => {
+                      setFormData({ ...formData, city: c.cityName });
+                      document.getElementById('city-dropdown').classList.add('hidden');
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-teal-50 hover:text-teal-700 transition-colors text-sm flex items-center justify-between group"
+                  >
+                    <span>{c.cityName}</span>
+                    {formData.city === c.cityName && (
+                      <span className="w-2 h-2 bg-teal-500 rounded-full"></span>
+                    )}
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-8 text-center">
+                  <p className="text-sm text-gray-500 italic">No cities found matching "{formData.city}"</p>
+                  <p className="text-xs text-gray-400 mt-1">You can keep typing to add a custom city.</p>
+                </div>
+              )}
+            </div>
+            {/* Overlay to close dropdown when clicking outside */}
+            <div
+              id="city-dropdown-overlay"
+              className="fixed inset-0 z-[90] hidden"
+              onClick={() => {
+                document.getElementById('city-dropdown').classList.add('hidden');
+                document.getElementById('city-dropdown-overlay').classList.add('hidden');
+              }}
+            ></div>
+          </div>
         )}
       </div>
     </div>
