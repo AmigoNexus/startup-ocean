@@ -39,6 +39,7 @@ const Register = () => {
   const [requireSequentialFill, setRequireSequentialFill] = useState(false);
   const [isCompanyDetailsSaved, setIsCompanyDetailsSaved] = useState(false);
   const [editingIndex, setEditingIndex] = useState(0);
+  const [tempVerifiedData, setTempVerifiedData] = useState(null);
 
   const handleNextStep = (e) => {
     e.preventDefault();
@@ -143,10 +144,7 @@ const Register = () => {
       });
 
       if (response.data.success && response.data.data) {
-        const { token, ...userData } = response.data.data;
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
+        setTempVerifiedData(response.data.data);
       }
 
       setIsEmailVerified(true);
@@ -251,6 +249,11 @@ const Register = () => {
     setError('');
 
     try {
+      if (tempVerifiedData?.token) {
+        localStorage.setItem('token', tempVerifiedData.token);
+        localStorage.setItem('user', JSON.stringify(tempVerifiedData));
+      }
+
       await companyAPI.create({
         email: formData.email,
         companyName: formData.companyName,
@@ -272,6 +275,12 @@ const Register = () => {
 
         city: formData.city
       });
+
+      if (tempVerifiedData) {
+        const { token, ...userData } = tempVerifiedData;
+        setUser(userData);
+      }
+
       toast.success("Company Registered!");
       navigate("/dashboard");
     } catch (error) {
