@@ -22,22 +22,17 @@ public class Company {
     @Column(name = "company_id")
     private Long companyId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(unique = true)
+    private String email;
 
     @Column(name = "company_name", nullable = false)
     private String companyName;
 
-    @Column(length = 150)
-    private String description;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "company_type")
-    private CompanyType companyType;
-
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Offering> offerings;
+    private List<ServiceEntity> services;
+
+    @Column(name = "city")
+    private String city;
 
     @OneToOne(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private SocialLink socialLinks;

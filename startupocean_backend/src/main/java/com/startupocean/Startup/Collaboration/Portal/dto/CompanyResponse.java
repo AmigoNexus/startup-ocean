@@ -20,5 +20,8 @@ public class CompanyResponse {
     private SocialLinkResponse socialLinks;
     private String email;
     private String phoneNumber;
+    private String city;
     private LocalDateTime createdAt;
+    private List<ServiceResponse> services;
+
 }

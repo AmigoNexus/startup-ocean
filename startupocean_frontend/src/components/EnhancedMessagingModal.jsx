@@ -42,14 +42,28 @@ const EnhancedMessagingModal = ({ collaboration, type, onClose }) => {
     const formatMessageTime = (dateString) => {
         const date = new Date(dateString);
 
+        const time = date.toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            timeZone: 'Asia/Kolkata'
+        });
+
         if (isToday(date)) {
-            return format(date, 'HH:mm');
+            return time;
         } else if (isYesterday(date)) {
-            return `Yesterday ${format(date, 'HH:mm')}`;
+            return `Yesterday ${time}`;
         } else {
-            return format(date, 'dd/MM/yyyy HH:mm');
+            const day = date.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                timeZone: 'Asia/Kolkata'
+            });
+            return `${day} ${time}`;
         }
     };
+
 
     const groupMessagesByDate = (messages) => {
         const groups = {};
@@ -178,11 +192,11 @@ const EnhancedMessagingModal = ({ collaboration, type, onClose }) => {
             <div className="bg-white w-full h-full md:max-w-4xl md:h-[90vh] md:rounded-lg flex flex-col shadow-2xl">
                 <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white p-4 md:rounded-t-lg flex items-center justify-between shadow-lg">
                     <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-teal-600 font-bold text-lg">
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-teal-600 font-bold text-sm">
                             {company?.companyName?.charAt(0) || '?'}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h2 className="text-lg font-semibold truncate">{company?.companyName}</h2>
+                            <h2 className="text-sm font-semibold truncate">{company?.companyName}</h2>
                             <p className="text-xs text-teal-100 truncate">{company?.companyType}</p>
                         </div>
                     </div>
@@ -254,8 +268,8 @@ const EnhancedMessagingModal = ({ collaboration, type, onClose }) => {
 
                                                         <div
                                                             className={`rounded-2xl px-4 py-2 shadow-sm ${isMe
-                                                                    ? 'bg-teal-500 text-white rounded-br-sm'
-                                                                    : 'bg-white text-gray-800 rounded-bl-sm border border-gray-200'
+                                                                ? 'bg-teal-500 text-white rounded-br-sm'
+                                                                : 'bg-white text-gray-800 rounded-bl-sm border border-gray-200'
                                                                 } ${msg.sending ? 'opacity-70' : ''}`}
                                                         >
                                                             <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
@@ -331,8 +345,8 @@ const EnhancedMessagingModal = ({ collaboration, type, onClose }) => {
                             type="submit"
                             disabled={sending || !newMessage.trim()}
                             className={`p-3 rounded-full transition flex-shrink-0 ${newMessage.trim() && !sending
-                                    ? 'bg-teal-300 text-white hover:bg-teal-400 shadow-lg'
-                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                ? 'bg-teal-300 text-white hover:bg-teal-400 shadow-lg'
+                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                 }`}
                         >
                             {sending ? (

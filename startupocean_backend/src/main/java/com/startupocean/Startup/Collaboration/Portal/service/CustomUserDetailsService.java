@@ -1,7 +1,7 @@
 package com.startupocean.Startup.Collaboration.Portal.service;
 
-import com.startupocean.Startup.Collaboration.Portal.entity.User;
-import com.startupocean.Startup.Collaboration.Portal.repository.UserRepository;
+import com.startupocean.Startup.Collaboration.Portal.entity.Company;
+import com.startupocean.Startup.Collaboration.Portal.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,25 +17,32 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final CompanyRepository companyRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmailAndIsActiveTrue(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    public UserDetails loadUserByUsername(String email)
+            throws UsernameNotFoundException {
+
+        Company company = companyRepository
+                .findByEmailAndIsActiveTrue(email)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("Company not found"));
 
         return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                "",
-                user.getIsActive(),
+                company.getEmail(),
+                "N/A",
                 true,
                 true,
                 true,
-                getAuthorities(user)
+                true,
+                getAuthorities()
         );
     }
 
-    private Collection<? extends GrantedAuthority> getAuthorities(User user) {
-        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+
+    private Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singleton(
+                new SimpleGrantedAuthority("ROLE_USER")
+        );
     }
 }

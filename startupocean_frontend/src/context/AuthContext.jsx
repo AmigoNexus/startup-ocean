@@ -44,15 +44,13 @@ export const AuthProvider = ({ children }) => {
   const requestLoginOtp = async (email) => {
     try {
       const response = await authAPI.requestLoginOtp(email);
-      if (response.data.success) {
-        return true;
-      } else {
-        toast(response.data.message || 'Failed to send OTP');
-        return false;
-      }
+
+      return response.data;
     } catch (error) {
-      toast(error.response?.data?.message || 'Failed to send OTP');
-      return false;
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to send OTP",
+      };
     }
   };
 

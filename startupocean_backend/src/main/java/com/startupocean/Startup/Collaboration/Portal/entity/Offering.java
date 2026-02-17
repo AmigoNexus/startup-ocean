@@ -21,14 +21,11 @@ public class Offering {
     private Long offeringId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id", nullable = false)
-    private Company company;
+    @JoinColumn(name = "service_id", nullable = false)
+    private ServiceEntity service;
 
     @Column(name = "offering_name", nullable = false)
     private String offeringName;
-
-    @Column(name = "offering_type")
-    private String offeringType;
 
     @Column(name = "is_active")
     private Boolean isActive = true;

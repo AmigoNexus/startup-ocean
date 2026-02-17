@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { companyAPI, eventAPI, collaborationAPI } from '../services/api';
-import { Briefcase, Calendar, Users, MessageSquare } from 'lucide-react';
+import { companyAPI, eventAPI, collaborationAPI, enquiryAPI } from '../services/api';
+import { Briefcase, Calendar, Users, MessageSquare, FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
@@ -19,9 +19,12 @@ const DashboardPage = () => {
     upcomingEvents: 0,
     collaborations: 0,
     unreadMessages: 0,
+    enquiries: 0,
   });
   const [loading, setLoading] = useState(true);
   const { isAuthenticated, user } = useAuth();
+
+  const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
     fetchDashboardData();
@@ -29,18 +32,26 @@ const DashboardPage = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [companyRes, eventsRes, collabRes, messagesRes] = await Promise.all([
+      const promises = [
         companyAPI.getMyCompany().catch(() => ({ data: { success: false } })),
         eventAPI.getUpcoming().catch(() => ({ data: { data: [] } })),
         collaborationAPI.getReceived().catch(() => ({ data: { data: [] } })),
         messageAPI.getUnreadCount().catch(() => ({ data: { data: 0 } })),
-      ]);
+      ];
+      if (isAdmin) {
+        promises.push(enquiryAPI.getAll().catch(() => ({ data: { data: [] } })));
+      }
+
+      const responses = await Promise.all(promises);
+
+      const [companyRes, eventsRes, collabRes, messagesRes, enquiriesRes] = responses;
 
       setStats({
         hasCompany: companyRes.data.success,
         upcomingEvents: eventsRes.data.data?.length || 0,
         collaborations: collabRes.data.data?.filter(c => c.status === 'PENDING').length || 0,
         unreadMessages: messagesRes.data.data || 0,
+        enquiries: isAdmin ? (enquiriesRes?.data?.data?.length || 0) : 0,
       });
     } catch {
       console.error('Failed to fetch dashboard data');
@@ -58,18 +69,19 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-1  ">
+    <div className="container mx-auto px-4 py-1">
       {isAuthenticated && (
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white py-4 mb-8 rounded-lg shadow-md">
           <div className="container mx-auto px-4">
             <h2 className="text-xl font-semibold text-center">
-              Welcome, <span className="font-bold">{user?.name || user?.email}</span>!
+              Welcome, <span className="font-bold">{user?.name || user?.email}</span>
+
             </h2>
           </div>
         </div>
       )}
       <h1 className="text-2xl font-bold text-gray-800 mb-8">Dashboard</h1>
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
+      <div className={`grid ${isAdmin ? 'md:grid-cols-4' : 'md:grid-cols-4'} gap-6 mb-8`}>
         <StatCard
           icon={<Briefcase className="h-8 w-8" />}
           title="Company Profile"
@@ -83,6 +95,7 @@ const DashboardPage = () => {
           value={stats.upcomingEvents}
           color="green"
           link="/events"
+          isComingSoon={true}
         />
         <StatCard
           icon={<Users className="h-8 w-8" />}
@@ -119,9 +132,10 @@ const DashboardPage = () => {
           />
           <ActionButton
             title="View Events"
-            description="Explore upcoming networking events"
+            description="Coming Soon"
             link="/events"
             color="green"
+            isComingSoon={true}
           />
           <ActionButton
             title="Collaborations"
@@ -135,26 +149,41 @@ const DashboardPage = () => {
             link="/messages"
             color="teal"
           />
+          {isAdmin && (
+            <ActionButton
+              title="View Enquiries"
+              description="Manage all contact enquiries"
+              link="/admin/enquiries"
+              color="orange"
+            />
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-const StatCard = ({ icon, title, value, color, link, badge }) => {
+const StatCard = ({ icon, title, value, color, link, badge, isComingSoon }) => {
   const colorClasses = {
     blue: 'from-blue-400 to-blue-500',
     green: 'from-green-400 to-green-500',
     purple: 'from-purple-400 to-purple-500',
     teal: 'from-teal-400 to-teal-500',
+    orange: 'from-orange-400 to-orange-500',
   };
 
   return (
     <Link
-      to={link}
-      className={`bg-gradient-to-br ${colorClasses[color]} text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition relative`}
+      to={isComingSoon ? '#' : link}
+      className={`bg-gradient-to-br ${colorClasses[color]} text-white p-6 rounded-lg shadow-lg transition relative ${isComingSoon ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:shadow-xl'}`}
+      onClick={(e) => isComingSoon && e.preventDefault()}
     >
-      {badge && (
+      {isComingSoon && (
+        <div className="absolute top-2 right-2 bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+          Soon
+        </div>
+      )}
+      {badge && !isComingSoon && (
         <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold animate-pulse">
           {value > 9 ? '9+' : value}
         </div>
@@ -163,16 +192,17 @@ const StatCard = ({ icon, title, value, color, link, badge }) => {
         {icon}
       </div>
       <h3 className="text-base font-semibold mb-1">{title}</h3>
-      <p className="text-2xl font-bold">{value}</p>
+      <p className="text-2xl font-bold">{isComingSoon ? '-' : value}</p>
     </Link>
   );
 };
 
-const ActionButton = ({ title, description, link }) => {
+const ActionButton = ({ title, description, link, color, isComingSoon }) => {
   return (
     <Link
-      to={link}
-      className="block bg-gray-50 hover:bg-gray-100 p-6 rounded-lg border-2 border-gray-200 hover:border-primary-500 transition"
+      to={isComingSoon ? '#' : link}
+      className={`block bg-gray-50 p-6 rounded-lg border-2 border-gray-200 transition ${isComingSoon ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:bg-gray-100 hover:border-primary-500'}`}
+      onClick={(e) => isComingSoon && e.preventDefault()}
     >
       <h3 className="text-base font-semibold text-gray-800 mb-2">{title}</h3>
       <p className="text-gray-600 text-xs">{description}</p>

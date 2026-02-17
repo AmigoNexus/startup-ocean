@@ -34,9 +34,8 @@ public class Event {
     @Column(length = 255)
     private String location;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organizer_id")
-    private User organizer;
+    @Column(name = "organizer")
+    private String organizer;
 
     @Column(name = "max_participants")
     private Integer maxParticipants;

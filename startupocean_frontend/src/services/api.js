@@ -37,9 +37,10 @@ export const authAPI = {
   register: (data) => api.post("/auth/register", data),
 
   requestLoginOtp: (email) =>
-    api.post("/auth/login/request-otp", { email }, {
-      headers: { Authorization: undefined },
-    }),
+    api.post("/auth/login/request-otp",
+      { email },
+      { headers: { Authorization: undefined } }
+    ),
 
   verifyLoginOtp: (data) =>
     api.post("/auth/login/verify-otp", data, {
@@ -51,8 +52,8 @@ export const authAPI = {
       headers: { Authorization: undefined },
     }),
 
-  resendOtp: (email) =>
-    api.post(`/auth/resend-otp?email=${email}`, null, {
+  sendOtp: (email) =>
+    api.post(`/auth/send-otp?email=${email}`, null, {
       headers: { Authorization: undefined },
     }),
 };
@@ -104,6 +105,10 @@ export const enquiryAPI = {
   delete: (id) => api.delete(`/enquiries/${id}`),
 };
 
+export const locationAPI = {
+  getCities: () => api.get('/cities'),
+};
+
 export const activityAPI = {
   track: (data) =>
     api.post("/activity/track", data, {
@@ -138,7 +143,7 @@ export const trackActivity = async ({
     });
 
   } catch (err) {
-    console.log("Tracking failed:", err?.response?.status, err.message);
+    console.error("Tracking failed:", err?.response?.status, err.message);
   }
 };
 

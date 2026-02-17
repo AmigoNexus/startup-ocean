@@ -6,11 +6,9 @@ import com.startupocean.Startup.Collaboration.Portal.dto.MessageResponse;
 import com.startupocean.Startup.Collaboration.Portal.entity.Collaboration;
 import com.startupocean.Startup.Collaboration.Portal.entity.Company;
 import com.startupocean.Startup.Collaboration.Portal.entity.Message;
-import com.startupocean.Startup.Collaboration.Portal.entity.User;
 import com.startupocean.Startup.Collaboration.Portal.repository.CollaborationRepository;
 import com.startupocean.Startup.Collaboration.Portal.repository.CompanyRepository;
 import com.startupocean.Startup.Collaboration.Portal.repository.MessageRepository;
-import com.startupocean.Startup.Collaboration.Portal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -26,33 +24,40 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final CollaborationRepository collaborationRepository;
     private final CompanyRepository companyRepository;
-    private final UserRepository userRepository;
+    private Company getAuthenticatedCompany() {
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
 
-    private User getAuthenticatedUser() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmailAndIsActiveTrue(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        return companyRepository.findByEmailAndIsActiveTrue(email)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
     }
 
     @Transactional
     public ApiResponse sendMessage(MessageRequest request) {
-        User user = getAuthenticatedUser();
 
-        Company senderCompany = companyRepository.findByUserAndIsActiveTrue(user)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+        Company senderCompany = getAuthenticatedCompany();
 
         Collaboration collaboration = collaborationRepository.findById(request.getCollaborationId())
                 .orElseThrow(() -> new RuntimeException("Collaboration not found"));
 
-        boolean isRequester = collaboration.getRequesterCompany().getCompanyId().equals(senderCompany.getCompanyId());
-        boolean isTarget = collaboration.getTargetCompany().getCompanyId().equals(senderCompany.getCompanyId());
+        boolean isRequester = collaboration.getRequesterCompany()
+                .getCompanyId().equals(senderCompany.getCompanyId());
+
+        boolean isTarget = collaboration.getTargetCompany()
+                .getCompanyId().equals(senderCompany.getCompanyId());
 
         if (!isRequester && !isTarget) {
-            return new ApiResponse(false, "You are not authorized to send messages in this collaboration", null);
+            return new ApiResponse(false,
+                    "You are not authorized to send messages in this collaboration",
+                    null);
         }
 
         if (collaboration.getStatus() != Collaboration.CollaborationStatus.ACCEPTED) {
-            return new ApiResponse(false, "Messages can only be sent in accepted collaborations", null);
+            return new ApiResponse(false,
+                    "Messages can only be sent in accepted collaborations",
+                    null);
         }
 
         Message message = new Message();
@@ -64,23 +69,28 @@ public class MessageService {
 
         Message savedMessage = messageRepository.save(message);
 
-        return new ApiResponse(true, "Message sent successfully", convertToResponse(savedMessage));
+        return new ApiResponse(true,
+                "Message sent successfully",
+                convertToResponse(savedMessage));
     }
 
     public ApiResponse getMessages(Long collaborationId) {
-        User user = getAuthenticatedUser();
 
-        Company company = companyRepository.findByUserAndIsActiveTrue(user)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+        Company company = getAuthenticatedCompany();
 
         Collaboration collaboration = collaborationRepository.findById(collaborationId)
                 .orElseThrow(() -> new RuntimeException("Collaboration not found"));
 
-        boolean isRequester = collaboration.getRequesterCompany().getCompanyId().equals(company.getCompanyId());
-        boolean isTarget = collaboration.getTargetCompany().getCompanyId().equals(company.getCompanyId());
+        boolean isRequester = collaboration.getRequesterCompany()
+                .getCompanyId().equals(company.getCompanyId());
+
+        boolean isTarget = collaboration.getTargetCompany()
+                .getCompanyId().equals(company.getCompanyId());
 
         if (!isRequester && !isTarget) {
-            return new ApiResponse(false, "You are not authorized to view messages in this collaboration", null);
+            return new ApiResponse(false,
+                    "You are not authorized to view messages in this collaboration",
+                    null);
         }
 
         List<Message> messages = messageRepository
@@ -90,11 +100,14 @@ public class MessageService {
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
 
-        return new ApiResponse(true, "Messages retrieved successfully", responses);
+        return new ApiResponse(true,
+                "Messages retrieved successfully",
+                responses);
     }
 
     @Transactional
     public ApiResponse markAsRead(Long messageId) {
+
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("Message not found"));
 
@@ -105,21 +118,24 @@ public class MessageService {
     }
 
     public ApiResponse getUnreadMessageCount() {
-        User user = getAuthenticatedUser();
 
-        Company company = companyRepository.findByUserAndIsActiveTrue(user)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+        Company company = getAuthenticatedCompany();
+
         List<Collaboration> collaborations = collaborationRepository
                 .findByRequesterCompanyOrTargetCompanyAndIsActiveTrue(company, company);
+
         long unreadCount = collaborations.stream()
                 .flatMap(collab -> messageRepository
                         .findByCollaborationAndIsActiveTrueOrderByCreatedAtAsc(collab)
                         .stream())
-                .filter(message -> !message.getSenderCompany().getCompanyId().equals(company.getCompanyId()))
+                .filter(message -> !message.getSenderCompany()
+                        .getCompanyId().equals(company.getCompanyId()))
                 .filter(message -> !message.getIsRead())
                 .count();
 
-        return new ApiResponse(true, "Unread message count retrieved", unreadCount);
+        return new ApiResponse(true,
+                "Unread message count retrieved",
+                unreadCount);
     }
 
     private MessageResponse convertToResponse(Message message) {

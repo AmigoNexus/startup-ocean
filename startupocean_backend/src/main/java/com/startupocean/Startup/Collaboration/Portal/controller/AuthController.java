@@ -16,11 +16,13 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest request) {
-        ApiResponse response = authService.register(request);
-        return ResponseEntity.status(response.isSuccess() ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST)
-                .body(response);
+    @PostMapping("/send-otp")
+    public ResponseEntity<ApiResponse> resendOtp(
+            @RequestParam String email
+    ) {
+        return ResponseEntity.ok(
+                authService.sendOtp(email)
+        );
     }
 
     @PostMapping("/verify-otp")
@@ -29,10 +31,11 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/resend-otp")
-    public ResponseEntity<ApiResponse> resendOtp(@RequestParam String email) {
-        ApiResponse response = authService.resendOtp(email);
-        return ResponseEntity.ok(response);
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest request) {
+        ApiResponse response = authService.register(request);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST)
+                .body(response);
     }
 
     @PostMapping("/login/request-otp")

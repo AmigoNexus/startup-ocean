@@ -1,107 +1,281 @@
 import { UserPlus, Plus, X, Building2, Share2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { authAPI, companyAPI } from '../services/api';
+import toast from 'react-hot-toast';
+import BasicInformation from '../components/BasicInformation';
+import CompanyDetails from '../components/CompanyDetails';
+import SocialNetworking from '../components/SocialNetworking';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [step, setStep] = useState(1);
+  const [stepHistory, setStepHistory] = useState([]);
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     companyName: '',
-    role: 'STARTUP',
     phoneNumber: '',
-    description: '',
-    offerings: [''],
+    companyDetails: [],
     website: '',
     linkedin: '',
     facebook: '',
     instagram: '',
     twitter: '',
+    city: '',
   });
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [registering, setRegistering] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [showCompanyTypeSelection, setShowCompanyTypeSelection] = useState(false);
+  const [requireSequentialFill, setRequireSequentialFill] = useState(false);
+  const [isCompanyDetailsSaved, setIsCompanyDetailsSaved] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(0);
 
   const handleNextStep = (e) => {
     e.preventDefault();
     setError('');
+    if (step === 1 && !isEmailVerified) {
+      toast.error('Please verify your email address to continue');
+      return;
+    }
+    if (step === 2) {
+      const phone = formData.phoneNumber?.trim();
+      if (phone) {
+        const digits = phone.replace(/\D/g, '');
+        const isMobile = /^\d{10}$/.test(digits);
+        const isLandline = /^\d{6,12}$/.test(digits);
+        if (!isMobile && !isLandline) {
+          setPhoneError('Enter a valid phone number: 10-digit mobile or 6–12 digit landline');
+          return;
+        }
+      }
+      setPhoneError('');
+
+      if (formData.companyDetails.length === 0) {
+        setError('Please select at least one company type');
+        return;
+      }
+
+      // Check for incomplete company details and show specific error
+      const incompleteIndex = formData.companyDetails.findIndex(c => {
+        const descEmpty = !c.description || c.description.trim() === '';
+        return descEmpty;
+      });
+
+      if (incompleteIndex !== -1) {
+        const incompleteType = formData.companyDetails[incompleteIndex].type;
+        const typeName = incompleteType === 'STARTUP' ? 'Startup Company' : 'Service Provider';
+
+        // Scroll to top to show the error
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        setRequireSequentialFill(true);
+        setEditingIndex(incompleteIndex);
+        toast.error(`Please fill the description for ${typeName}`);
+        setError(`⚠️ Incomplete Details: Please fill the description for "${typeName}" before proceeding.`);
+        return;
+      }
+    }
+
     if (step < 3) {
+      setStepHistory((h) => [...h, step]);
       setStep(step + 1);
     }
   };
 
+  useEffect(() => {
+    let interval;
+    if (resendTimer > 0) {
+      interval = setInterval(() => setResendTimer((t) => t - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
+  const handleSendOtp = async () => {
+    if (isSendingOtp) return;
+
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
+      toast('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      setIsSendingOtp(true);
+      const response = await authAPI.sendOtp(formData.email);
+      if (response.data.success) {
+        setIsOtpSent(true);
+        setResendTimer(30);
+        toast.success(response.data.message);
+      } else {
+        toast.error(response.data.message);
+      }
+
+    } catch (err) {
+      console.error('Failed to send OTP', err);
+      toast.error('Failed to send OTP. Try again later');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+
+  const handleVerifyOtp = async () => {
+    if (isVerifyingOtp) return;
+    if (!otp || otp.trim().length === 0) {
+      toast.error('Please enter the OTP');
+      return;
+    }
+
+    try {
+      setIsVerifyingOtp(true);
+      const response = await authAPI.verifyOtp({
+        email: formData.email,
+        otp: otp.trim(),
+      });
+
+      if (response.data.success && response.data.data) {
+        const { token, ...userData } = response.data.data;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+      }
+
+      setIsEmailVerified(true);
+      setIsOtpSent(false);
+      toast.success('Email verified');
+    } catch (err) {
+      console.error('OTP verify failed', err);
+      toast.error('Invalid OTP. Please try again');
+      setOtp('');
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
   const handlePrevStep = () => {
-    if (step > 1) {
+    if (stepHistory.length > 0) {
+      const prev = stepHistory[stepHistory.length - 1];
+      setStepHistory((h) => h.slice(0, -1));
+      setStep(prev);
+    } else if (step > 1) {
       setStep(step - 1);
     }
   };
 
-  const addOffering = () => {
+  const addCompanyDetail = () => {
+    const existingTypes = formData.companyDetails.map(c => c.type);
+    const availableTypes = [
+      { value: 'STARTUP', label: 'Startup Company' },
+      { value: 'SERVICE_PROVIDER', label: 'Service Provider' }
+    ].filter(t => !existingTypes.includes(t.value));
+
+    if (availableTypes.length === 0) {
+      toast.error('You can only add Startup and Service Provider once each');
+      return;
+    }
+
+    if (availableTypes.length === 1) {
+      confirmAddCompanyDetail(availableTypes[0].value);
+    } else {
+      setShowCompanyTypeSelection(true);
+    }
+  };
+
+  const confirmAddCompanyDetail = (type) => {
+    const newIndex = formData.companyDetails.length;
+
     setFormData({
       ...formData,
-      offerings: [...formData.offerings, ''],
+      companyDetails: [
+        ...formData.companyDetails,
+        {
+          type: type,
+          description: '',
+          offerings: ['']
+        }
+      ]
     });
+    setShowCompanyTypeSelection(false);
+
+    setEditingIndex(newIndex);
+    setRequireSequentialFill(true);
   };
 
-  const updateOffering = (index, value) => {
-    const newOfferings = [...formData.offerings];
-    newOfferings[index] = value;
-    setFormData({ ...formData, offerings: newOfferings });
+  const removeCompanyDetail = (index) => {
+    if (formData.companyDetails.length > 1) {
+      setFormData({
+        ...formData,
+        companyDetails: formData.companyDetails.filter((_, i) => i !== index)
+      });
+    }
   };
 
-  const removeOffering = (index) => {
-    if (formData.offerings.length > 1) {
-      const newOfferings = formData.offerings.filter((_, i) => i !== index);
-      setFormData({ ...formData, offerings: newOfferings });
+  const updateCompanyDetail = (index, field, value) => {
+    const newCompanyDetails = [...formData.companyDetails];
+    newCompanyDetails[index][field] = value;
+    setFormData({ ...formData, companyDetails: newCompanyDetails });
+  };
+
+  const addOffering = (companyIndex) => {
+    const newCompanyDetails = [...formData.companyDetails];
+    newCompanyDetails[companyIndex].offerings.push('');
+    setFormData({ ...formData, companyDetails: newCompanyDetails });
+  };
+
+  const updateOffering = (companyIndex, offeringIndex, value) => {
+    const newCompanyDetails = [...formData.companyDetails];
+    newCompanyDetails[companyIndex].offerings[offeringIndex] = value;
+    setFormData({ ...formData, companyDetails: newCompanyDetails });
+  };
+
+  const removeOffering = (companyIndex, offeringIndex) => {
+    const newCompanyDetails = [...formData.companyDetails];
+    if (newCompanyDetails[companyIndex].offerings.length > 1) {
+      newCompanyDetails[companyIndex].offerings = newCompanyDetails[companyIndex].offerings.filter((_, i) => i !== offeringIndex);
+      setFormData({ ...formData, companyDetails: newCompanyDetails });
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setRegistering(true);
-    setLoading(true);
     setError('');
 
-    const registrationData = {
-      name: formData.name,
-      email: formData.email,
-      companyName: formData.companyName,
-      role: formData.role,
-      phoneNumber: formData.phoneNumber || null,
-    };
-
     try {
-      const response = await authAPI.register(registrationData);
+      await companyAPI.create({
+        email: formData.email,
+        companyName: formData.companyName,
+        phoneNumber: formData.phoneNumber,
 
-      if (response.data) {
-        const companyData = {
-          phoneNumber: formData.phoneNumber,
-          description: formData.description,
-          offerings: formData.offerings.filter(o => o.trim() !== ''),
-          socialLinks: {
-            website: formData.website,
-            linkedin: formData.linkedin,
-            facebook: formData.facebook,
-            instagram: formData.instagram,
-            twitter: formData.twitter,
-          },
-        };
+        services: formData.companyDetails.map(detail => ({
+          type: detail.type,
+          description: detail.description,
+          offerings: detail.offerings.filter(o => o.trim() !== "")
+        })),
 
-        localStorage.setItem('pendingCompanyData', JSON.stringify(companyData));
-        navigate('/verify-otp', {
-          state: {
-            email: formData.email,
-            companyName: formData.companyName,
-            role: formData.role,               
-          },
-          replace: true
-        });
-      }
+        socialLinks: {
+          website: formData.website,
+          linkedin: formData.linkedin,
+          facebook: formData.facebook,
+          instagram: formData.instagram,
+          twitter: formData.twitter,
+        },
+
+        city: formData.city
+      });
+      toast.success("Company Registered!");
+      navigate("/dashboard");
     } catch (error) {
       console.error('Registration error:', error);
-      setRegistering(false);
 
       if (error.response?.data?.message) {
         setError(error.response.data.message);
@@ -113,7 +287,7 @@ const Register = () => {
         setError('Registration failed. Please try again.');
       }
     } finally {
-      setLoading(false);
+      setRegistering(false);
     }
   };
 
@@ -189,64 +363,27 @@ const Register = () => {
             </p>
           </div>
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-xs sm:text-sm text-red-800">{error}</p>
+            <div className="mb-3 p-2 px-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-xs text-red-800">{error}</p>
             </div>
           )}
           {step === 1 && (
             <form onSubmit={handleNextStep} className="space-y-6">
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="John Doe"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                  Email Address (OTP Based) *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="your.email@example.com"
-                />
-                <p className="text-xs sm:text-xs text-gray-500 mt-1">OTP will be sent to this email for verification</p>
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Company Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.companyName}
-                  onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="Your Company Name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Register As *</label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  required
-                >
-                  <option value="STARTUP">Startup Company</option>
-                  <option value="SERVICE_PROVIDER">Service Provider</option>
-                </select>
-              </div>
-
+              <BasicInformation
+                formData={formData}
+                setFormData={setFormData}
+                isEmailVerified={isEmailVerified}
+                isOtpSent={isOtpSent}
+                isSendingOtp={isSendingOtp}
+                isVerifyingOtp={isVerifyingOtp}
+                otp={otp}
+                setOtp={setOtp}
+                resendTimer={resendTimer}
+                phoneError={phoneError}
+                setPhoneError={setPhoneError}
+                handleSendOtp={handleSendOtp}
+                handleVerifyOtp={handleVerifyOtp}
+              />
               <button
                 type="submit"
                 className="w-full bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition"
@@ -264,77 +401,32 @@ const Register = () => {
           )}
           {step === 2 && (
             <form onSubmit={handleNextStep} className="space-y-6">
-              <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-4">
-                <p className="text-xs sm:text-sm text-teal-800">
-                  ℹ️ The following information is optional. You can complete it now or later from your profile.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                  Description (Max 150 chars)
-                </label>
-                <textarea
-                  maxLength={150}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  rows={3}
-                  placeholder="Short description (2-3 lines)"
-                />
-                <p className="text-xs sm:text-xs text-gray-500 mt-1 text-right">
-                  {formData.description.length}/150
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                  Offerings / Specialization
-                </label>
-                <div className="space-y-3">
-                  {formData.offerings.map((offering, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={offering}
-                        onChange={(e) => updateOffering(index, e.target.value)}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        placeholder="e.g. IT Consulting"
-                      />
-                      {formData.offerings.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeOffering(index)}
-                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={addOffering}
-                  className="mt-3 flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg hover:bg-teal-100 transition"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add More
-                </button>
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                <input
-                  type="tel"
-                  pattern="[0-9]{10}"
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="1234567890"
-                />
-              </div>
-
+              <CompanyDetails
+                formData={formData}
+                setFormData={(newData) => {
+                  setFormData(newData);
+                  setIsCompanyDetailsSaved(false);
+                }}
+                showCompanyTypeSelection={showCompanyTypeSelection}
+                setShowCompanyTypeSelection={setShowCompanyTypeSelection}
+                addCompanyDetail={addCompanyDetail}
+                removeCompanyDetail={removeCompanyDetail}
+                updateCompanyDetail={updateCompanyDetail}
+                addOffering={addOffering}
+                updateOffering={updateOffering}
+                removeOffering={removeOffering}
+                confirmAddCompanyDetail={confirmAddCompanyDetail}
+                requireSequentialFill={requireSequentialFill}
+                setRequireSequentialFill={setRequireSequentialFill}
+                editingIndex={editingIndex}
+                setEditingIndex={setEditingIndex}
+                onAllSaved={() => {
+                  setError('');
+                  setRequireSequentialFill(false);
+                  setIsCompanyDetailsSaved(true);
+                  toast.success('Company details saved');
+                }}
+              />
               <div className="flex gap-4 pt-4 border-t">
                 <button
                   type="button"
@@ -345,7 +437,8 @@ const Register = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition"
+                  disabled={!isCompanyDetailsSaved}
+                  className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next: Social Networking →
                 </button>
@@ -355,67 +448,7 @@ const Register = () => {
 
           {step === 3 && (
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-4">
-                <p className="text-xs sm:text-sm text-teal-800">
-                  ℹ️ Add your social media profiles to help others connect with you (Optional)
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Website</label>
-                <input
-                  type="url"
-                  value={formData.website}
-                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="https://www.yourcompany.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">LinkedIn Page</label>
-                <input
-                  type="url"
-                  value={formData.linkedin}
-                  onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="https://linkedin.com/company/yourcompany"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Facebook</label>
-                <input
-                  type="url"
-                  value={formData.facebook}
-                  onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="https://facebook.com/yourcompany"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Instagram</label>
-                <input
-                  type="url"
-                  value={formData.instagram}
-                  onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="https://instagram.com/yourcompany"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Twitter</label>
-                <input
-                  type="url"
-                  value={formData.twitter}
-                  onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="https://twitter.com/yourcompany"
-                />
-              </div>
-
+              <SocialNetworking formData={formData} setFormData={setFormData} />
               <div className="flex gap-4 pt-4 border-t">
                 <button
                   type="button"
@@ -427,10 +460,16 @@ const Register = () => {
                 <button
                   type="submit"
                   disabled={registering}
-
-                  className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition disabled:opacity-50"
+                  className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {registering ? 'Creating Account...' : 'Complete Registration →'}
+                  {registering ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                      Creating Account...
+                    </div>
+                  ) : (
+                    'Complete Registration →'
+                  )}
                 </button>
               </div>
             </form>

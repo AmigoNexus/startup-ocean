@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom';
-import { Briefcase, Users, Calendar, TrendingUp, Mail, Quote } from 'lucide-react';
+import { Briefcase, Users, Calendar, TrendingUp, Mail, Quote, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { enquiryAPI, trackActivity } from '../services/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import StartupTrendingNewsMini from '../components/StartupTrendingNewsMini';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import Lottie from "lottie-react";
+import startupAnimation from "../assets/startupAnimation.json";
 
 const HomePage = () => {
   const [enquiryForm, setEnquiryForm] = useState({
@@ -15,6 +18,19 @@ const HomePage = () => {
   });
   const [loading, setLoading] = useState(false);
   const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [searchInput, setSearchInput] = useState("");
+
+
+
+  useEffect(() => {
+    const query = searchParams.get('q');
+    if (query) {
+      setSearchInput(query);
+    }
+  }, [searchParams]);
+
   const handleSubmitEnquiry = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -35,37 +51,6 @@ const HomePage = () => {
     });
   }, []);
 
-  // const testimonials = [
-  //   {
-  //     quote: "This platform helped us find the right legal and marketing partners quickly. It's a game-changer for startups!",
-  //     author: "Priya Sharma",
-  //     role: "Startup Founder",
-  //     company: "TechVenture India",
-  //     avatar: "PS"
-  //   },
-  //   {
-  //     quote: "StartupOcean connected us with amazing service providers. We scaled our business faster than we imagined!",
-  //     author: "Rajesh Kumar",
-  //     role: "CEO",
-  //     company: "InnovateLabs",
-  //     avatar: "RK"
-  //   },
-  //   {
-  //     quote: "The networking opportunities here are incredible. We found investors and mentors who truly understand our vision.",
-  //     author: "Ananya Desai",
-  //     role: "Co-founder",
-  //     company: "GreenTech Solutions",
-  //     avatar: "AD"
-  //   },
-  //   {
-  //     quote: "As a service provider, this platform helped me reach startups that genuinely needed my expertise. Highly recommended!",
-  //     author: "Vikram Patel",
-  //     role: "Business Consultant",
-  //     company: "Growth Partners",
-  //     avatar: "VP"
-  //   }
-  // ];
-
   return (
     <div>
       {isAuthenticated && (
@@ -77,15 +62,66 @@ const HomePage = () => {
           </div>
         </div>
       )}
-      <section className={`bg-gradient-to-r from-primary-400 to-primary-500 text-white py-5 ${!isAuthenticated ? 'mt-' : ''}`}>
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-2xl font-bold mb-4">
-            Startup Collaboration & Services Portal
-          </h1>
-          <p className="text-base mb-4 max-w-2xl mx-auto">
-            Connecting Startups & Service Providers Under One Umbrella<br />
-            Platform Created for Startup. Service Providers. Founders. Investors.
-          </p>
+      <section className="bg-gradient-to-r from-primary-400 to-primary-500 text-white py-10">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
+
+            {/* LEFT SIDE - Heading */}
+            <div className="flex-1 text-center lg:text-right">
+              <h1 className="text-3xl lg:text-4xl font-bold mb-4">
+                Startup Collaboration & Services Portal
+              </h1>
+            </div>
+
+            {/* CENTER - ANIMATION */}
+            <div className="flex-shrink-0">
+              <div className="w-[180px] sm:w-[220px] md:w-[260px] lg:w-[300px]">
+                <Lottie
+                  animationData={startupAnimation}
+                  loop
+                  className="w-full h-auto"
+                />
+              </div>
+            </div>
+
+            {/* RIGHT SIDE - Description & Search */}
+            <div className="flex-1 text-center lg:text-left">
+              <p className="text-base mb-6 max-w-xl mx-auto lg:mx-0">
+                Connecting Startups & Service Providers Under One Umbrella<br />
+                Platform Created for Startup. Service Providers. Founders. Investors.
+              </p>
+
+              {/* SEARCH BOX */}
+              <div className="flex gap-2 max-w-md mx-auto lg:mx-0">
+                <input
+                  type="text"
+                  placeholder="Search by name, city, or specialization..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && searchInput.trim()) {
+                      navigate(`/search?q=${encodeURIComponent(searchInput)}`);
+                    }
+                  }}
+                  className="flex-1 px-4 py-3 rounded-lg text-gray-800 focus:ring-2 focus:ring-white focus:outline-none"
+                />
+
+                <button
+                  onClick={() =>
+                    navigate(
+                      searchInput.trim()
+                        ? `/search?q=${encodeURIComponent(searchInput)}`
+                        : "/search"
+                    )
+                  }
+                  className="bg-white text-primary-500 px-6 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-2 font-semibold"
+                >
+                  <Search className="h-5 w-5" />
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -97,39 +133,39 @@ const HomePage = () => {
           <div className="flex flex-col lg:flex-row gap-8 items-stretch">
             <div className="grid md:grid-cols-2 gap-8 flex-1 w-auto h-auto shrink-0">
 
-              <Link
-                to="/search?type=STARTUP"
-                className="h-full bg-gradient-to-br from-blue-100 to-blue-100 p-8 rounded-xl shadow-lg hover:shadow-xl transition group"
+              <div
+                onClick={() => navigate('/search?type=STARTUP')}
+                className="cursor-pointer h-full bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group border border-blue-200"
               >
-                <div className="flex items-center justify-center w-16 h-16 bg-blue-500 text-white rounded-full mb-4 group-hover:scale-110 transition">
+                <div className="flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-2xl mb-6 group-hover:scale-110 transition shadow-lg shadow-blue-200">
                   <Briefcase className="h-8 w-8" />
                 </div>
 
-                <h3 className="text-lg font-bold text-gray-800 mb-3">
-                  Looking Startup for Collaboration
+                <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-blue-700 transition">
+                  Looking for Startups
                 </h3>
 
-                <p className="text-sm text-gray-600">
-                  Connect and collaborate with other startups.
+                <p className="text-gray-600 leading-relaxed">
+                  Connect and collaborate with innovative startups in the ecosystem.
                 </p>
-              </Link>
+              </div>
 
-              <Link
-                to="/search?type=SERVICE_PROVIDER"
-                className="h-full bg-gradient-to-br from-green-100 to-green-100 p-8 rounded-xl shadow-lg hover:shadow-xl transition group"
+              <div
+                onClick={() => navigate('/search?type=SERVICE_PROVIDER')}
+                className="cursor-pointer h-full bg-gradient-to-br from-teal-50 to-teal-100 p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group border border-teal-200"
               >
-                <div className="flex items-center justify-center w-16 h-16 bg-green-500 text-white rounded-full mb-4 group-hover:scale-110 transition">
+                <div className="flex items-center justify-center w-16 h-16 bg-teal-600 text-white rounded-2xl mb-6 group-hover:scale-110 transition shadow-lg shadow-teal-200">
                   <Users className="h-8 w-8" />
                 </div>
 
-                <h3 className="text-lg font-bold text-gray-800 mb-3">
-                  Service Providers
+                <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-teal-700 transition">
+                  Looking for Service Providers
                 </h3>
 
-                <p className="text-sm text-gray-600">
-                  Find consultants to scale your startup.
+                <p className="text-gray-600 leading-relaxed">
+                  Find expert consultants and agencies to scale your business.
                 </p>
-              </Link>
+              </div>
             </div>
             <div className="w-full lg:w-[380px] shrink-0 h-full">
               <StartupTrendingNewsMini />
@@ -157,7 +193,7 @@ const HomePage = () => {
               {
                 icon: <Calendar className="h-8 w-8" />,
                 title: 'Organize Events',
-                desc: 'Host and attend startup-focused events',
+                desc: 'Coming Soon',
               },
               {
                 icon: <TrendingUp className="h-8 w-8" />,
@@ -165,8 +201,12 @@ const HomePage = () => {
                 desc: 'Access to consultants and service providers',
               },
             ].map((feature, idx) => (
-              <div key={idx} className="bg-white p-6 rounded-lg shadow-md text-center">
-                <div className="flex justify-center text-primary-500 mb-4">
+              <div
+                key={idx}
+                className={`bg-white p-6 rounded-lg shadow-md text-center transition-all ${feature.desc === 'Coming Soon' ? 'opacity-50 grayscale bg-gray-50' : ''
+                  }`}
+              >
+                <div className={`flex justify-center mb-4 ${feature.desc === 'Coming Soon' ? 'text-gray-400' : 'text-primary-500'}`}>
                   {feature.icon}
                 </div>
                 <h3 className="text-base font-semibold mb-2">{feature.title}</h3>
@@ -178,45 +218,7 @@ const HomePage = () => {
       </section>
       <section className="py-16 bg-gradient-to-br from-teal-50 to-blue-50">
         <div className="container mx-auto px-4 ">
-          {/* <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              What Our Community Says
-            </h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Don't just take our word for it. Here's what startups and service providers have to say about StartupOcean.
-            </p>
-          </div> */}
 
-          {/* <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, idx) => (
-              <div
-                key={idx}
-                className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 relative"
-              >
-                <div className="absolute top-6 right-6 text-teal-200">
-                  <Quote className="h-12 w-12" />
-                </div>
-                <div className="relative z-10">
-                  <p className="text-gray-700 text-lg mb-6 italic leading-relaxed">
-                    "{testimonial.quote}"
-                  </p>
-                  <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                      {testimonial.avatar}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-800 text-lg">
-                        {testimonial.author}
-                      </h4>
-                      <p className="text-gray-600 text-sm">
-                        {testimonial.role} at {testimonial.company}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div> */}
           <div className="text-center mt-12">
             <p className="text-gray-700 text-base mb-4">
               Join startups and service providers already growing their business

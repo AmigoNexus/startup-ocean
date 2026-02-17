@@ -117,13 +117,18 @@ const MessagesPage = () => {
     const formatLastMessageTime = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
-        return formatDistanceToNow(date, { addSuffix: true });
+
+        return formatDistanceToNow(
+            new Date(date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })),
+            { addSuffix: true }
+        );
     };
+
 
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="mb-8">
-                <h1 className="text-4xl font-bold text-gray-800 mb-2">Messages</h1>
+                <h1 className="text-2xl font-bold text-gray-800 mb-2">Messages</h1>
             </div>
 
             <div className="mb-6">
@@ -193,7 +198,7 @@ const ConversationItem = ({ collaboration, onClick, lastMessage, unreadCount, fo
         >
             <div className="flex items-center gap-4">
                 <div className="relative flex-shrink-0">
-                    <div className="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
+                    <div className="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md">
                         {company?.companyName?.charAt(0)?.toUpperCase() || '?'}
                     </div>
                     {unreadCount > 0 && (
@@ -204,7 +209,7 @@ const ConversationItem = ({ collaboration, onClick, lastMessage, unreadCount, fo
                 </div>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                        <h3 className="text-lg font-semibold text-gray-800 truncate">
+                        <h3 className="text-sm font-semibold text-gray-800 truncate">
                             {company?.companyName || 'Unknown Company'}
                         </h3>
                         {lastMessage && (

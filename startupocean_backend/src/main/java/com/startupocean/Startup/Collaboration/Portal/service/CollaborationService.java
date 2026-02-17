@@ -5,10 +5,8 @@ import com.startupocean.Startup.Collaboration.Portal.dto.CollaborationRequest;
 import com.startupocean.Startup.Collaboration.Portal.dto.CollaborationResponse;
 import com.startupocean.Startup.Collaboration.Portal.entity.Collaboration;
 import com.startupocean.Startup.Collaboration.Portal.entity.Company;
-import com.startupocean.Startup.Collaboration.Portal.entity.User;
 import com.startupocean.Startup.Collaboration.Portal.repository.CollaborationRepository;
 import com.startupocean.Startup.Collaboration.Portal.repository.CompanyRepository;
-import com.startupocean.Startup.Collaboration.Portal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -23,24 +21,32 @@ public class CollaborationService {
 
     private final CollaborationRepository collaborationRepository;
     private final CompanyRepository companyRepository;
-    private final UserRepository userRepository;
     private final EmailService emailService;
     private final CompanyService companyService;
 
+    private Company getAuthenticatedCompany() {
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        return companyRepository.findByEmailAndIsActiveTrue(email)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+    }
+
     @Transactional
     public ApiResponse sendCollaborationRequest(CollaborationRequest request) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmailAndIsActiveTrue(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Company requesterCompany = companyRepository.findByUserAndIsActiveTrue(user)
-                .orElseThrow(() -> new RuntimeException("You must have a registered company to send collaboration requests"));
+        Company requesterCompany = getAuthenticatedCompany();
 
-        Company targetCompany = companyRepository.findByCompanyIdAndIsActiveTrue(request.getTargetCompanyId())
+        Company targetCompany = companyRepository
+                .findByCompanyIdAndIsActiveTrue(request.getTargetCompanyId())
                 .orElseThrow(() -> new RuntimeException("Target company not found"));
 
         if (requesterCompany.getCompanyId().equals(targetCompany.getCompanyId())) {
-            return new ApiResponse(false, "Cannot send collaboration request to your own company", null);
+            return new ApiResponse(false,
+                    "Cannot send collaboration request to your own company",
+                    null);
         }
 
         Collaboration collaboration = new Collaboration();
@@ -50,57 +56,64 @@ public class CollaborationService {
         collaboration.setStatus(Collaboration.CollaborationStatus.PENDING);
         collaboration.setIsActive(true);
 
-        Collaboration savedCollaboration = collaborationRepository.save(collaboration);
+        collaborationRepository.save(collaboration);
+
         emailService.sendCollaborationRequestEmail(
-                targetCompany.getUser().getEmail(),
+                targetCompany.getEmail(),
                 requesterCompany.getCompanyName(),
                 request.getMessage()
         );
 
-        return new ApiResponse(true, "Collaboration request sent successfully", null);
+        return new ApiResponse(true,
+                "Collaboration request sent successfully",
+                null);
     }
 
     public ApiResponse getSentCollaborations() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmailAndIsActiveTrue(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Company company = companyRepository.findByUserAndIsActiveTrue(user)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+        Company company = getAuthenticatedCompany();
 
-        List<Collaboration> collaborations = collaborationRepository.findByRequesterCompanyAndIsActiveTrue(company);
+        List<Collaboration> collaborations =
+                collaborationRepository.findByRequesterCompanyAndIsActiveTrue(company);
 
-        return new ApiResponse(true, "Sent collaborations retrieved successfully",
-                collaborations.stream().map(this::convertToResponse).collect(Collectors.toList()));
+        return new ApiResponse(true,
+                "Sent collaborations retrieved successfully",
+                collaborations.stream()
+                        .map(this::convertToResponse)
+                        .collect(Collectors.toList()));
     }
 
     public ApiResponse getReceivedCollaborations() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmailAndIsActiveTrue(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Company company = companyRepository.findByUserAndIsActiveTrue(user)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+        Company company = getAuthenticatedCompany();
 
-        List<Collaboration> collaborations = collaborationRepository.findByTargetCompanyAndIsActiveTrue(company);
+        List<Collaboration> collaborations =
+                collaborationRepository.findByTargetCompanyAndIsActiveTrue(company);
 
-        return new ApiResponse(true, "Received collaborations retrieved successfully",
-                collaborations.stream().map(this::convertToResponse).collect(Collectors.toList()));
+        return new ApiResponse(true,
+                "Received collaborations retrieved successfully",
+                collaborations.stream()
+                        .map(this::convertToResponse)
+                        .collect(Collectors.toList()));
     }
 
     @Transactional
     public ApiResponse acceptCollaboration(Long collaborationId) {
+
         Collaboration collaboration = collaborationRepository.findById(collaborationId)
                 .orElseThrow(() -> new RuntimeException("Collaboration not found"));
 
         collaboration.setStatus(Collaboration.CollaborationStatus.ACCEPTED);
         collaborationRepository.save(collaboration);
 
-        return new ApiResponse(true, "Collaboration accepted successfully", null);
+        return new ApiResponse(true,
+                "Collaboration accepted successfully",
+                null);
     }
 
     @Transactional
     public ApiResponse rejectCollaboration(Long collaborationId) {
+
         Collaboration collaboration = collaborationRepository.findById(collaborationId)
                 .orElseThrow(() -> new RuntimeException("Collaboration not found"));
 
@@ -112,13 +125,16 @@ public class CollaborationService {
 
     @Transactional
     public ApiResponse deleteCollaboration(Long collaborationId) {
+
         Collaboration collaboration = collaborationRepository.findById(collaborationId)
                 .orElseThrow(() -> new RuntimeException("Collaboration not found"));
 
         collaboration.softDelete();
         collaborationRepository.save(collaboration);
 
-        return new ApiResponse(true, "Collaboration deleted successfully", null);
+        return new ApiResponse(true,
+                "Collaboration deleted successfully",
+                null);
     }
 
     private CollaborationResponse convertToResponse(Collaboration collaboration) {
@@ -139,5 +155,4 @@ public class CollaborationService {
 
         return response;
     }
-
 }

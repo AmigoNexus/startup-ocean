@@ -21,17 +21,20 @@ const Login = () => {
     e.preventDefault();
 
     setSendingOtp(true);
-    setStep(2);
-    startCountdown();
 
-    const success = await requestLoginOtp(email);
-
-    if (!success) {
-      toast("OTP send failed");
-      setStep(1);
-    }
+    const result = await requestLoginOtp(email);
 
     setSendingOtp(false);
+
+    if (!result.success) {
+      toast.error(result.message);
+      return;
+    }
+
+    toast.success(result.message);
+
+    setStep(2);
+    startCountdown();
   };
 
 
@@ -46,7 +49,10 @@ const Login = () => {
 
     setVerifyingOtp(false);
 
-    if (success) navigate("/dashboard");
+    if (success) {
+      toast.success("Login successful!");
+      navigate("/dashboard");
+    }
   };
 
   const startCountdown = () => {
@@ -72,8 +78,11 @@ const Login = () => {
     const success = await requestLoginOtp(email);
     setLoading(false);
 
-    if (success) {
+    if (success && success.success !== false) {
+      toast.success(success.message || "OTP resent successfully!");
       startCountdown();
+    } else if (success && success.success === false) {
+      toast.error(success.message || "Failed to resend OTP");
     }
   };
 
@@ -85,18 +94,18 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <div className="flex flex-col items-center mb-8">
-          <LogIn className="h-12 w-12 text-teal-400 mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800">Login</h2>
-          <p className="text-gray-600 mt-2">
-            {step === 1 ? 'Enter your email to continue' : 'Enter OTP sent to your email'}
+    <div className="flex items-center justify-center bg-gray-50 py-8 px-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+        <div className="flex flex-col items-center mb-6">
+          <LogIn className="h-10 w-10 text-teal-400 mb-3" />
+          <h2 className="text-2xl font-semibold text-gray-800">Login</h2>
+          <p className="text-gray-600 mt-1 text-sm">
+            {step === 1 ? 'Enter your email to continue' : 'Enter the 6-digit OTP sent to your email'}
           </p>
         </div>
 
         {step === 1 && (
-          <form onSubmit={handleRequestOtp} className="space-y-6">
+          <form onSubmit={handleRequestOtp} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
@@ -111,16 +120,15 @@ const Login = () => {
                 autoFocus
               />
             </div>
-
             <button
               type="submit"
               disabled={sendingOtp}
-              className="w-full bg-teal-400 text-white py-3 rounded-lg font-semibold hover:bg-teal-500 transition disabled:opacity-50"
+              className="w-full bg-teal-400 text-white py-2 rounded-lg font-semibold hover:bg-teal-500 transition disabled:opacity-50"
             >
               {sendingOtp ? 'Sending OTP...' : 'Send OTP →'}
             </button>
 
-            <p className="text-center text-gray-600 mt-6">
+            <p className="text-center text-gray-600 mt-4 text-sm">
               Don't have an account?{' '}
               <Link to="/register" className="text-teal-400 font-semibold hover:underline">
                 Register here
@@ -130,7 +138,7 @@ const Login = () => {
         )}
 
         {step === 2 && (
-          <form onSubmit={handleVerifyOtp} className="space-y-6">
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 text-center">
                 Enter OTP
@@ -141,7 +149,7 @@ const Login = () => {
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-center text-2xl tracking-widest font-semibold"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-center text-2xl tracking-widest font-semibold"
                 placeholder="000000"
                 autoFocus
               />
@@ -153,7 +161,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={verifyingOtp || otp.length !== 6}
-              className="w-full bg-teal-400 text-white py-3 rounded-lg font-semibold hover:bg-teal-500 transition disabled:opacity-50"
+              className="w-full bg-teal-400 text-white py-2 rounded-lg font-semibold hover:bg-teal-500 transition disabled:opacity-50"
             >
               {verifyingOtp ? 'Verifying...' : 'Verify & Login'}
             </button>

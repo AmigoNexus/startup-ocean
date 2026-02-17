@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { companyAPI } from '../services/api';
-import { Briefcase, Plus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import CompanyDetails from '../components/CompanyDetails';
 
 const CompanyPage = () => {
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     companyName: '',
     description: '',
-    companyType: 'STARTUP',
-    offerings: [''],
+    companyType: '',
+    companyDetails: [],
+    offerings: [],
     socialLinks: {
       website: '',
       linkedin: '',
@@ -19,7 +19,13 @@ const CompanyPage = () => {
       instagram: '',
       twitter: '',
     },
+    phoneNumber: '',
+    email: '',
   });
+
+  const [requireSequentialFill, setRequireSequentialFill] = useState(false);
+  const [showCompanyTypeSelection, setShowCompanyTypeSelection] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(0);
 
   useEffect(() => {
     fetchCompany();
@@ -30,75 +36,152 @@ const CompanyPage = () => {
     try {
       const response = await companyAPI.getMyCompany();
       if (response.data.success) {
-        setCompany(response.data.data);
+        const data = response.data.data;
+        setCompany(data);
+
+        let initialCompanyDetails = [];
+        if (data.services && data.services.length > 0) {
+          initialCompanyDetails = data.services.map(s => ({
+            type: typeof s === 'object' ? s.type : s,
+            description: s.description || '',
+            offerings: (s.offerings && s.offerings.length > 0) ? s.offerings : ['']
+          }));
+        } else {
+          initialCompanyDetails = [{
+            type: data.companyType || 'STARTUP',
+            description: data.description || '',
+            offerings: data.offerings && data.offerings.length > 0 ? data.offerings : ['']
+          }];
+        }
+
         setFormData({
-          companyName: response.data.data.companyName,
-          description: response.data.data.description,
-          companyType: response.data.data.companyType,
-          offerings: response.data.data.offerings || [''],
-          socialLinks: response.data.data.socialLinks || {
+          companyName: data.companyName || '',
+          description: data.description || '',
+          companyType: data.companyType || 'STARTUP',
+          offerings: data.offerings || [''],
+          companyDetails: initialCompanyDetails,
+          socialLinks: data.socialLinks || {
             website: '',
             linkedin: '',
             facebook: '',
             instagram: '',
             twitter: '',
           },
+          phoneNumber: data.phoneNumber || '',
+          email: data.email || '',
         });
-        setIsEditing(false);
+
+
       } else {
-        setIsEditing(true);
+        toast.error("Company profile not found");
       }
-    } catch {
-      setIsEditing(true);
+    }
+    catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e) => {
+
+  const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const payload = {
-        ...formData,
-        offerings: formData.offerings.filter((o) => o.trim()),
+        companyName: formData.companyName,
+        phoneNumber: formData.phoneNumber,
+        socialLinks: formData.socialLinks,
+
+        services: formData.companyDetails.map(d => ({
+          type: typeof d.type === "object" ? d.type.type : String(d.type),
+
+          description: d.description || "",
+          offerings: d.offerings?.filter(o => o && o.trim()) || []
+        }))
       };
 
-      if (company) {
-        await companyAPI.update(company.companyId, payload);
-        toast.success('Company updated successfully');
-      } else {
-        await companyAPI.create(payload);
-        toast.success('Company created successfully');
+      if (!company?.companyId) {
+        toast.error("Company profile not found. Please contact admin.");
+        return;
       }
-      fetchCompany();
-    } catch {
-      toast('Failed to save company');
+
+      await companyAPI.update(company.companyId, payload);
+      toast.success('Company updated successfully');
+
+      await fetchCompany();
+
+
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to save company');
     } finally {
       setLoading(false);
     }
   };
 
-  const addOffering = () => {
+  const addCompanyDetail = () => {
+    const existingTypes = formData.companyDetails.map(c => c.type);
+    const availableTypes = ['STARTUP', 'SERVICE_PROVIDER'].filter(t => !existingTypes.includes(t));
+
+    if (availableTypes.length === 1) {
+      confirmAddCompanyDetail(availableTypes[0]);
+    } else if (availableTypes.length > 1) {
+      setShowCompanyTypeSelection(true);
+    } else {
+      toast.error("All company types added.");
+    }
+  };
+
+  const confirmAddCompanyDetail = (type) => {
     setFormData({
       ...formData,
-      offerings: [...formData.offerings, ''],
+      companyDetails: [
+        ...formData.companyDetails,
+        {
+          type: type,
+          description: '',
+          offerings: ['']
+        }
+      ]
     });
+    setShowCompanyTypeSelection(false);
   };
 
-  const updateOffering = (index, value) => {
-    const newOfferings = [...formData.offerings];
-    newOfferings[index] = value;
-    setFormData({ ...formData, offerings: newOfferings });
+  const removeCompanyDetail = (index) => {
+    const newDetails = formData.companyDetails.filter((_, i) => i !== index);
+    setFormData({ ...formData, companyDetails: newDetails });
   };
 
-  const removeOffering = (index) => {
-    const newOfferings = formData.offerings.filter((_, i) => i !== index);
-    setFormData({ ...formData, offerings: newOfferings });
+  const updateCompanyDetail = (index, field, value) => {
+    const newDetails = [...formData.companyDetails];
+    newDetails[index][field] = value;
+    setFormData({ ...formData, companyDetails: newDetails });
   };
 
-  if (loading && !isEditing) {
+  const addOffering = (companyIndex) => {
+    const newDetails = [...formData.companyDetails];
+    newDetails[companyIndex].offerings.push('');
+    setFormData({ ...formData, companyDetails: newDetails });
+  };
+
+  const updateOffering = (companyIndex, offeringIndex, value) => {
+    const newDetails = [...formData.companyDetails];
+    newDetails[companyIndex].offerings[offeringIndex] = value;
+    setFormData({ ...formData, companyDetails: newDetails });
+  };
+
+  const removeOffering = (companyIndex, offeringIndex) => {
+    const newDetails = [...formData.companyDetails];
+    if (newDetails[companyIndex].offerings.length > 1) {
+      newDetails[companyIndex].offerings = newDetails[companyIndex].offerings.filter((_, i) => i !== offeringIndex);
+      setFormData({ ...formData, companyDetails: newDetails });
+    }
+  };
+
+
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
@@ -108,105 +191,36 @@ const CompanyPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-800">
-            {company ? 'My Company' : 'Create Company Profile'}
+            My Company Details
           </h1>
-          {company && !isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="bg-primary-500 text-white px-6 py-2 rounded-lg hover:bg-primary-600 transition"
-            >
-              Edit
-            </button>
-          )}
         </div>
 
-        {isEditing ? (
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-8 space-y-6">
+        <div className="w-full">
+          <form onSubmit={handleSave} className="bg-white rounded-lg shadow-lg p-8 space-y-8">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Company Name *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.companyName}
-                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              <CompanyDetails
+                formData={formData}
+                showCompanyTypeSelection={showCompanyTypeSelection}
+                setShowCompanyTypeSelection={setShowCompanyTypeSelection}
+                addCompanyDetail={addCompanyDetail}
+                removeCompanyDetail={removeCompanyDetail}
+                updateCompanyDetail={updateCompanyDetail}
+                addOffering={addOffering}
+                updateOffering={updateOffering}
+                removeOffering={removeOffering}
+                confirmAddCompanyDetail={confirmAddCompanyDetail}
+                requireSequentialFill={requireSequentialFill}
+                setRequireSequentialFill={setRequireSequentialFill}
+                editingIndex={editingIndex}
+                setEditingIndex={setEditingIndex}
+                onAllSaved={() => { }}
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description (Max 150 chars) *
-              </label>
-              <textarea
-                required
-                maxLength={150}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                rows={3}
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                {formData.description.length}/150 characters
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Company Type *
-              </label>
-              <select
-                value={formData.companyType}
-                onChange={(e) => setFormData({ ...formData, companyType: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                disabled={!!company}
-              >
-                <option value="STARTUP">Startup</option>
-                <option value="SERVICE_PROVIDER">Service Provider</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Offerings / Specializations *
-              </label>
-              {formData.offerings.map((offering, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={offering}
-                    onChange={(e) => updateOffering(index, e.target.value)}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="e.g., IT Consulting"
-                  />
-                  {formData.offerings.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeOffering(index)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-2"
-                    >
-                      <X className="h-4 w-4" />
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addOffering}
-                className="mt-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add More
-              </button>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Social Links (Optional)</h3>
+              <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Social Links</h3>
               <div className="space-y-4">
                 {['website', 'linkedin', 'facebook', 'instagram', 'twitter'].map((platform) => (
                   <div key={platform}>
@@ -230,89 +244,24 @@ const CompanyPage = () => {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 pt-4 border-t">
               <button
                 type="submit"
                 disabled={loading}
                 className="flex-1 bg-primary-500 text-white py-3 rounded-lg font-semibold hover:bg-primary-600 transition disabled:opacity-50"
               >
-                {loading ? 'Saving...' : company ? 'Update Company' : 'Create Company'}
+                {loading ? 'Saving...' : 'Update Services & Links'}
               </button>
-              {company && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsEditing(false);
-                    fetchCompany();
-                  }}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-                >
-                  Cancel
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => fetchCompany()}
+                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+              >
+                Reset
+              </button>
             </div>
           </form>
-        ) : (
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center">
-                <Briefcase className="h-8 w-8 text-primary-500" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800">{company.companyName}</h2>
-                <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-semibold">
-                  {company.companyType}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-700 mb-2">Description</h3>
-                <p className="text-gray-600">{company.description}</p>
-              </div>
-
-              {company.offerings && company.offerings.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">Offerings</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {company.offerings.map((offering, idx) => (
-                      <span
-                        key={idx}
-                        className="bg-primary-50 text-primary-700 px-3 py-2 rounded-lg text-sm"
-                      >
-                        {offering}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {company.socialLinks && (
-                <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">Social Links</h3>
-                  <div className="space-y-2">
-                    {Object.entries(company.socialLinks).map(([key, value]) => 
-                      value ? (
-                        <div key={key} className="flex items-center gap-2">
-                          <span className="text-gray-600 capitalize min-w-24">{key}:</span>
-                          <a
-                            href={value}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary-500 hover:underline truncate"
-                          >
-                            {value}
-                          </a>
-                        </div>
-                      ) : null
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

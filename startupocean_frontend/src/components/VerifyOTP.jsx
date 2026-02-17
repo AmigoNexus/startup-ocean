@@ -12,7 +12,6 @@ const VerifyOTP = () => {
   const [canResend, setCanResend] = useState(false);
   const [error, setError] = useState('');
   const [verified, setVerified] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
   const { setUser } = useAuth();
 
   const navigate = useNavigate();
@@ -21,26 +20,6 @@ const VerifyOTP = () => {
 
   const email = location.state?.email;
   const companyName = location.state?.companyName;
-  const role = location.state?.role;
-
-  useEffect(() => {
-    if (!email) {
-      navigate('/register', { replace: true });
-      return;
-    }
-
-    // Simulate OTP sending - in a real app, this might be called
-    // Show loading for 1-2 seconds, then show the OTP input
-    const otpTimer = setTimeout(() => {
-      setOtpSent(true);
-      startCountdown();
-    }, 1500);
-
-    return () => {
-      clearTimeout(otpTimer);
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
 
   const startCountdown = () => {
     setCountdown(60);
@@ -59,6 +38,23 @@ const VerifyOTP = () => {
       });
     }, 1000);
   };
+
+  useEffect(() => {
+    if (!email) {
+      navigate('/register', { replace: true });
+      return;
+    }
+    // Simulate OTP sending - in a real app, this might be called
+    // Show loading for 1-2 seconds, then show the OTP input
+    const otpTimer = setTimeout(() => {
+      startCountdown();
+    }, 1500);
+
+    return () => {
+      clearTimeout(otpTimer);
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [email, navigate]);
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
@@ -90,7 +86,6 @@ const VerifyOTP = () => {
           const companyData = JSON.parse(pendingData);
           const payload = {
             companyName: companyName,
-            companyType: role || 'STARTUP',
             description: companyData.description || '',
             offerings: companyData.offerings?.length > 0
               ? companyData.offerings
@@ -151,26 +146,6 @@ const VerifyOTP = () => {
       setLoading(false);
     }
   };
-  if (verified) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <div className="flex justify-center mb-6">
-            <CheckCircle className="h-20 w-20 text-teal-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Registration Complete!
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Your account and company profile have been set up successfully. Redirecting to dashboard...
-          </p>
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-400"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
   if (verified) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">

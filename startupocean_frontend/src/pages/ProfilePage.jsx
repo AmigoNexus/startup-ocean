@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { User, Mail, Phone, Briefcase, Building2, Edit2, Save, X, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { companyAPI } from '../services/api';
@@ -11,6 +12,7 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ name: '', phoneNumber: '' });
   const [loading, setLoading] = useState(false);
+  const activeService = user?.company?.services?.[0];
 
   useEffect(() => {
     if (authUser) {
@@ -38,7 +40,7 @@ const ProfilePage = () => {
         }));
       }
     } catch (err) {
-      console.log('Failed to fetch company:', err);
+      console.error('Failed to fetch company:', err);
     }
   };
 
@@ -72,11 +74,14 @@ const ProfilePage = () => {
       if (user.company && user.company.companyId) {
         const companyPayload = {
           companyName: user.company.companyName,
-          description: user.company.description || '',
-          companyType: user.company.companyType,
-          offerings: user.company.offerings || [],
-          socialLinks: user.company.socialLinks || {},
           phoneNumber: formData.phoneNumber,
+          socialLinks: user.company.socialLinks || {},
+
+          services: user.company.services?.map(s => ({
+            type: s.type,
+            description: s.description || "",
+            offerings: s.offerings || []
+          })) || []
         };
         await companyAPI.update(user.company.companyId, companyPayload);
         const updatedCompany = {
@@ -154,7 +159,7 @@ const ProfilePage = () => {
               <div className="flex justify-between mb-6">
                 <h3 className="text-2xl font-bold flex items-center gap-2">
                   <User className="h-6 w-6 text-teal-600" />
-                  Personal Information
+                  Company Information
                 </h3>
 
                 {!isEditing ? (
@@ -218,120 +223,67 @@ const ProfilePage = () => {
                 )}
               </Label>
             </div>
-            {user.company && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-2xl font-bold mb-6 flex gap-2">
-                  <Building2 className="h-6 w-6 text-teal-600" />
-                  Company Information
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="flex justify-between mb-6">
+                <h3 className="text-2xl font-bold flex items-center gap-2">
+                  <Building2 className="h-6 w-6 text-blue-600" />
+                  Company Services
                 </h3>
-                <div className="space-y-4">
-                  <Value
-                    icon={<Briefcase className="h-5 w-5 text-teal-600" />}
-                    value={user.company.companyName}
-                  />
-                  <Value
-                    icon={<Building2 className="h-5 w-5 text-teal-600" />}
-                    value={user.company.companyType}
-                  />
-                  <Value
-                    icon={<Mail className="h-5 w-5 text-red-500" />}
-                    value={user.company.email || user.email}
-                  />
-                  <Value
-                    icon={<Phone className="h-5 w-5 text-green-600" />}
-                    value={user.company.phoneNumber || "Not provided"}
-                  />
-                  <div className="bg-gray-50 px-4 py-3 rounded-lg">
-                    <p className="text-sm text-gray-500 mb-1">Description</p>
-                    <p className="font-medium text-gray-800">
-                      {user.company.description || "No description available"}
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 px-4 py-3 rounded-lg">
-                    <p className="text-sm text-gray-500 mb-2">Offerings</p>
-                    {user.company.offerings?.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {user.company.offerings.map((item, index) => (
-                          <span
-                            key={index}
-                            className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-semibold"
-                          >
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500">No offerings added</p>
-                    )}
-                  </div>
-                  <div className="bg-gray-50 px-4 py-3 rounded-lg">
-                    <p className="text-sm text-gray-500 mb-2">Social Links</p>
-                    <div className="space-y-1 text-sm">
-                      {user.company.socialLinks?.website && (
-                        <a
-                          href={user.company.socialLinks.website}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-teal-600 hover:underline block"
-                        >
-                          🌐 Website
-                        </a>
-                      )}
-                      {user.company.socialLinks?.linkedin && (
-                        <a
-                          href={user.company.socialLinks.linkedin}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-teal-600 hover:underline block"
-                        >
-                          💼 LinkedIn
-                        </a>
-                      )}
-                      {user.company.socialLinks?.facebook && (
-                        <a
-                          href={user.company.socialLinks.facebook}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-teal-600 hover:underline block"
-                        >
-                          📘 Facebook
-                        </a>
-                      )}
-                      {user.company.socialLinks?.instagram && (
-                        <a
-                          href={user.company.socialLinks.instagram}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-teal-600 hover:underline block"
-                        >
-                          📸 Instagram
-                        </a>
-                      )}
-                      {user.company.socialLinks?.twitter && (
-                        <a
-                          href={user.company.socialLinks.twitter}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-teal-600 hover:underline block"
-                        >
-                          🐦 Twitter
-                        </a>
-                      )}
-                      {!user.company.socialLinks ||
-                        Object.values(user.company.socialLinks).every(v => !v) ? (
-                        <p className="text-gray-500">No social links available</p>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
+                <Link
+                  to="/company"
+                  className="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center gap-1"
+                >
+                  Manage Services <Edit2 className="h-3 w-3" />
+                </Link>
               </div>
-            )}
+
+              {user.company?.services?.length > 0 ? (
+                <div className="space-y-4">
+                  {user.company.services.map((service, index) => (
+                    <div key={index} className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:border-teal-200 transition-all">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-teal-100 rounded-lg text-teal-600">
+                          {service.type === 'STARTUP' ? <Building2 className="h-5 w-5" /> : <Shield className="h-5 w-5" />}
+                        </div>
+                        <h4 className="font-bold text-gray-800">
+                          {service.type === 'STARTUP' ? 'Startup Company' : 'Service Provider'}
+                        </h4>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                        {service.description || 'No description provided.'}
+                      </p>
+                      {service.offerings?.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {service.offerings.map((offering, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-white px-3 py-1 rounded-full text-xs font-medium text-teal-700 border border-teal-100 shadow-sm"
+                            >
+                              {offering}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                  <p className="text-gray-500 text-sm">No services registered yet.</p>
+                  <Link to="/company" className="text-teal-600 font-bold text-sm mt-2 block hover:underline">
+                    Setup Profile →
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+
 
 const Label = ({ label, children }) => (
   <div className="mb-4">

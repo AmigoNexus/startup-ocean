@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Search, Briefcase, Mail, Phone, Globe, UserPlus, Eye, X, Building2, Linkedin, Facebook, Instagram, Twitter, Lock } from 'lucide-react';
+import { Briefcase, Mail, Phone, Globe, UserPlus, Eye, X, Building2, Linkedin, Facebook, Instagram, Twitter, Lock, MapPin } from 'lucide-react';
 import { collaborationAPI, companyAPI, trackActivity } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useSearchParams } from "react-router-dom";
 
 const SearchPage = () => {
   const [companies, setCompanies] = useState([]);
@@ -16,72 +17,53 @@ const SearchPage = () => {
   const [connectMessage, setConnectMessage] = useState('');
   const [sendingRequest, setSendingRequest] = useState(false);
 
+  const [searchParams] = useSearchParams();
+
 
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      fetchCompanies();
-      return;
-    }
 
-    try {
-      setLoading(true);
-
-      const res = await companyAPI.search(searchTerm);
-      const list = res.data.data || [];
-
-      const realCompanies = list.map((c) => ({
-        companyId: c.companyId,
-        companyName: c.companyName,
-        companyType: c.companyType,
-        description: c.description,
-        offerings: c.offerings || [],
-        email: c.email,
-        phoneNumber: c.phoneNumber,
-        socialLinks: c.socialLinks || {}
-      }));
-
-      setCompanies(realCompanies);
-    } catch (err) {
-      console.error("Search failed", err);
-      toast('Search not found. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
   useEffect(() => {
     trackActivity({
       activityType: "PAGE_VISIT",
       pageUrl: window.location.pathname,
     });
   }, []);
+  useEffect(() => {
+    const query = searchParams.get("q");
+    const type = searchParams.get("type");
+
+    if (query) {
+      setSearchTerm(query);
+    }
+
+    if (type) {
+      setCompanyType(type);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchCompanies();
-  }, [companyType]);
+  }, []);
 
   const fetchCompanies = async () => {
     try {
       setLoading(true);
-
-      const res = await companyAPI.getAll(
-        companyType !== "ALL" ? companyType : null
-      );
-
+      const res = await companyAPI.getAll(null);
       const list = res.data.data || [];
       const realCompanies = list.map((c) => ({
         companyId: c.companyId,
         companyName: c.companyName,
-        companyType: c.companyType,
-        description: c.description,
+        companyType: c.services?.[0]?.type || "UNKNOWN",
+        description: c.services?.[0]?.description || "",
         offerings: c.offerings || [],
         email: c.email,
         phoneNumber: c.phoneNumber,
-        socialLinks: c.socialLinks || {}
+        socialLinks: c.socialLinks || {},
+        services: c.services || [],
+        city: c.city
       }));
-
       setCompanies(realCompanies);
     } catch (err) {
       console.error("Failed to fetch companies", err);
@@ -131,9 +113,15 @@ const SearchPage = () => {
     }
   };
 
-  const filteredCompanies = companyType === 'ALL'
-    ? companies
-    : companies.filter(c => c.companyType === companyType);
+  const filteredCompanies = companies.filter(company => {
+    const matchesType = companyType === "ALL" || company.services?.some(s => s.type === companyType);
+    const matchesSearch = !searchTerm ||
+      company.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.offerings?.some(o => o.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    return matchesType && matchesSearch;
+  });
 
   return (
     <div className="container mx-auto px-4 py-8  ">
@@ -154,19 +142,11 @@ const SearchPage = () => {
           <div className="flex-1 flex gap-2">
             <input
               type="text"
-              placeholder="Search by name or specialization..."
+              placeholder="Search by name, specialization, or city..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
             />
-            <button
-              onClick={handleSearch}
-              className="bg-teal-400 text-white px-4 py-2 rounded-lg hover:bg-teal-500 transition flex items-center gap-2 text-sm"
-            >
-              <Search className="h-5 w-5" />
-              Search
-            </button>
           </div>
         </div>
       </div>
@@ -228,7 +208,14 @@ const SearchPage = () => {
               </div>
               <div>
                 <h3 className="font-bold text-gray-800">{selectedCompany.companyName}</h3>
-                <p className="text-sm text-gray-600">{selectedCompany.companyType}</p>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {selectedCompany.services?.map((s, idx) => (
+                    <span key={idx} className="text-[10px] uppercase font-bold text-teal-600">
+                      {s.type.replace('_', ' ')}
+                      {idx < selectedCompany.services.length - 1 ? ' • ' : ''}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -250,7 +237,7 @@ const SearchPage = () => {
                 onClick={handleConnect}
                 disabled={sendingRequest}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition
-                ${sendingRequest ? 'bg-teal-300 cursor-not-allowed'  : 'bg-teal-400 hover:bg-teal-500 text-white'} `} >
+                ${sendingRequest ? 'bg-teal-300 cursor-not-allowed' : 'bg-teal-400 hover:bg-teal-500 text-white'} `} >
                 {sendingRequest ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -296,7 +283,13 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition flex flex-col">
+    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition flex flex-col relative overflow-hidden">
+      {company.city && (
+        <div className="absolute top-0 right-0 bg-teal-500 text-white px-3 py-1 rounded-bl-lg flex items-center gap-1 shadow-sm z-10">
+          <MapPin className="h-3 w-3" />
+          <span className="text-[10px] font-bold uppercase tracking-wider">{company.city}</span>
+        </div>
+      )}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
@@ -304,7 +297,16 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
           </div>
           <div>
             <h3 className="text-xl font-bold text-gray-800">{company.companyName}</h3>
-            <span className="text-sm text-gray-500">{company.companyType}</span>
+            <div className="flex flex-wrap gap-1">
+              {company.services?.map((s, idx) => (
+                <span key={idx} className="text-[10px] uppercase font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                  {s.type.replace('_', ' ')}
+                </span>
+              ))}
+              {(!company.services || company.services.length === 0) && (
+                <span className="text-sm text-gray-500">{company.companyType}</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -380,8 +382,22 @@ const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, nav
               <Building2 className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-800">{company.companyName}</h3>
-              <p className="text-gray-600">{company.companyType}</p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-bold text-gray-800">{company.companyName}</h3>
+                {company.city && (
+                  <span className="flex items-center gap-1 text-[10px] font-bold bg-teal-500 text-white px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                    <MapPin className="h-3 w-3" />
+                    {company.city}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {company.services?.map((s, idx) => (
+                  <span key={idx} className="text-xs uppercase font-bold bg-white text-teal-600 px-2 py-1 rounded shadow-sm border border-teal-200">
+                    {s.type.replace('_', ' ')}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 

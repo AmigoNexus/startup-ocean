@@ -72,13 +72,33 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Auth endpoints
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // Activity tracking
                         .requestMatchers("/api/activity/**").permitAll()
                         .requestMatchers("/activity/**").permitAll()
+
+                        // Companies
                         .requestMatchers(HttpMethod.GET, "/companies/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/companies/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/companies/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/companies/**").permitAll()
+
+                        // ⭐ ADD THIS BLOCK (CITY FIX)
+                        .requestMatchers(HttpMethod.GET, "/cities/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cities/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/cities/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/cities/**").authenticated()
+
+                        // Events
                         .requestMatchers(HttpMethod.GET, "/events/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/enquiries/submit").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
+                        .requestMatchers("/events/**").authenticated()
+                        .requestMatchers("/api/events/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter,

@@ -17,6 +17,7 @@ import DashboardPage from './pages/Dashboard';
 import VerifyOTP from './components/VerifyOTP';
 import StartupTrendingNews from './components/StartupTrendingNews';
 import StartupTrendingNewsMini from "./components/StartupTrendingNewsMini";
+import AdminEnquiriesPage from './pages/AdminEnquiriesPage';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
               <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
               <Route path="/company" element={<PrivateRoute><CompanyPage /></PrivateRoute>} />
               <Route path="/search" element={<SearchPage />} />
+              <Route path="/admin/enquiries" element={<AdminEnquiriesPage />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/collaborations" element={<PrivateRoute><CollaborationsPage /></PrivateRoute>} />
               <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
@@ -44,7 +46,7 @@ function App() {
           </main>
           <Footer />
         </div>
-        <Toaster position="top-right" />
+        <Toaster position="bottom-right" />
       </AuthProvider>
     </Router>
   );
