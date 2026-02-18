@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { companyAPI, eventAPI, collaborationAPI, enquiryAPI } from '../services/api';
-import { Briefcase, Calendar, Users, MessageSquare, FileText } from 'lucide-react';
+import {
+  Briefcase,
+  Calendar,
+  Users,
+  MessageSquare,
+  Search,
+  PlusCircle,
+  Settings,
+  Bell,
+  ArrowRight
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
@@ -43,7 +53,6 @@ const DashboardPage = () => {
       }
 
       const responses = await Promise.all(promises);
-
       const [companyRes, eventsRes, collabRes, messagesRes, enquiriesRes] = responses;
 
       setStats({
@@ -62,35 +71,44 @@ const DashboardPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-teal-100 border-t-teal-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-1">
+    <div className="container mx-auto px-4 py-8">
+      {/* Welcome Banner */}
       {isAuthenticated && (
-        <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white py-4 mb-8 rounded-lg shadow-md">
-          <div className="container mx-auto px-4">
-            <h2 className="text-xl font-semibold text-center">
-              Welcome, <span className="font-bold">{user?.name || user?.email}</span>
-
+        <div className="bg-gradient-to-br from-teal-400 to-teal-500 text-white p-8 mb-10 rounded-3xl shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Briefcase className="h-40 w-40 rotate-12" />
+          </div>
+          <div className="relative z-10">
+            <h2 className="text-3xl font-black mb-2 tracking-tight">
+              Welcome Back, <span className="text-teal-700">{user?.name || user?.email?.split('@')[0]}!</span>
             </h2>
+            <p className="text-teal-50/80 font-medium tracking-tight">Manage your company presence and collaborations seamlessly.</p>
           </div>
         </div>
       )}
-      <h1 className="text-2xl font-bold text-gray-800 mb-8">Dashboard</h1>
-      <div className={`grid ${isAdmin ? 'md:grid-cols-4' : 'md:grid-cols-4'} gap-6 mb-8`}>
+
+      {/* Stats Grid */}
+      <div className="mt-4 mb-4 flex items-center gap-2">
+        <Settings className="h-5 w-5 text-teal-600" />
+        <h2 className="text-xl font-bold text-gray-800">Dashboard Overview</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <StatCard
-          icon={<Briefcase className="h-8 w-8" />}
-          title="Company Profile"
-          value={stats.hasCompany ? 'Active' : 'Not Created'}
+          icon={<Briefcase className="h-4 w-4" />}
+          title="Profile Status"
+          value={stats.hasCompany ? 'Active' : 'Not Setup'}
           color="blue"
           link="/company"
         />
         <StatCard
-          icon={<Calendar className="h-8 w-8" />}
+          icon={<Calendar className="h-4 w-4" />}
           title="Upcoming Events"
           value={stats.upcomingEvents}
           color="green"
@@ -98,14 +116,15 @@ const DashboardPage = () => {
           isComingSoon={true}
         />
         <StatCard
-          icon={<Users className="h-8 w-8" />}
+          icon={<Users className="h-4 w-4" />}
           title="Pending Requests"
           value={stats.collaborations}
           color="purple"
           link="/collaborations"
+          badge={stats.collaborations > 0}
         />
         <StatCard
-          icon={<MessageSquare className="h-8 w-8" />}
+          icon={<MessageSquare className="h-4 w-4" />}
           title="Unread Messages"
           value={stats.unreadMessages}
           color="teal"
@@ -113,48 +132,52 @@ const DashboardPage = () => {
           badge={stats.unreadMessages > 0}
         />
       </div>
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-lg font-bold text-gray-800 mb-6">Quick Actions</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      {/* Quick Actions */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+        <h2 className="text-xl font-bold text-gray-800 mb-8 flex items-center gap-2">
+          <PlusCircle className="h-5 w-5 text-teal-600" /> Quick Actions
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {!stats.hasCompany && (
             <ActionButton
+              icon={<PlusCircle className="h-4 w-4 text-teal-600" />}
               title="Create Company Profile"
-              description="Set up your company profile to get started"
+              description="Get started by setting up your brand"
               link="/company"
-              color="primary"
             />
           )}
           <ActionButton
+            icon={<Search className="h-4 w-4 text-blue-600" />}
             title="Search Companies"
-            description="Find startups or service providers"
+            description="Explore potential partners"
             link="/search"
-            color="blue"
           />
           <ActionButton
+            icon={<Calendar className="h-4 w-4 text-green-600" />}
             title="View Events"
-            description="Coming Soon"
+            description="Discover networking opportunities"
             link="/events"
-            color="green"
             isComingSoon={true}
           />
           <ActionButton
+            icon={<Users className="h-4 w-4 text-purple-600" />}
             title="Collaborations"
-            description="Manage your collaboration requests"
+            description="Manage your requests"
             link="/collaborations"
-            color="purple"
           />
           <ActionButton
+            icon={<MessageSquare className="h-4 w-4 text-teal-600" />}
             title="Messages"
-            description="Chat with your connections"
+            description="Chat with connections"
             link="/messages"
-            color="teal"
           />
           {isAdmin && (
             <ActionButton
+              icon={<Bell className="h-4 w-4 text-orange-600" />}
               title="View Enquiries"
-              description="Manage all contact enquiries"
+              description="Manage system enquiries"
               link="/admin/enquiries"
-              color="orange"
             />
           )}
         </div>
@@ -164,48 +187,60 @@ const DashboardPage = () => {
 };
 
 const StatCard = ({ icon, title, value, color, link, badge, isComingSoon }) => {
-  const colorClasses = {
-    blue: 'from-blue-400 to-blue-500',
-    green: 'from-green-400 to-green-500',
-    purple: 'from-purple-400 to-purple-500',
-    teal: 'from-teal-400 to-teal-500',
-    orange: 'from-orange-400 to-orange-500',
+  const colorMap = {
+    blue: 'border-blue-500 text-blue-600 bg-blue-50/30',
+    green: 'border-green-500 text-green-600 bg-green-50/30',
+    purple: 'border-purple-500 text-purple-600 bg-purple-50/30',
+    teal: 'border-teal-500 text-teal-600 bg-teal-50/30',
   };
 
   return (
     <Link
       to={isComingSoon ? '#' : link}
-      className={`bg-gradient-to-br ${colorClasses[color]} text-white p-6 rounded-lg shadow-lg transition relative ${isComingSoon ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:shadow-xl'}`}
+      className={`group bg-white p-8 rounded-3xl border border-gray-100 shadow-sm transition-all duration-300 relative overflow-hidden flex flex-col justify-between h-40 ${isComingSoon ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-lg hover:border-teal-200 hover:-translate-y-1'}`}
       onClick={(e) => isComingSoon && e.preventDefault()}
     >
-      {isComingSoon && (
-        <div className="absolute top-2 right-2 bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
-          Soon
+      <div className="flex justify-between items-start mb-4">
+        <div className={`p-2 rounded-xl border ${colorMap[color]}`}>
+          {icon}
         </div>
-      )}
-      {badge && !isComingSoon && (
-        <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold animate-pulse">
-          {value > 9 ? '9+' : value}
-        </div>
-      )}
-      <div className="flex items-center justify-between mb-4">
-        {icon}
+        {badge && !isComingSoon && (
+          <div className="bg-red-500 text-white rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center text-[10px] font-bold animate-pulse">
+            {value > 9 ? '9+' : value}
+          </div>
+        )}
+        {isComingSoon && (
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Soon</span>
+        )}
       </div>
-      <h3 className="text-base font-semibold mb-1">{title}</h3>
-      <p className="text-2xl font-bold">{isComingSoon ? '-' : value}</p>
+      <div>
+        <h3 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1 group-hover:text-gray-700 transition">
+          {title}
+        </h3>
+        <p className="text-2xl font-black text-gray-800 tracking-tight">{isComingSoon ? '-' : value}</p>
+      </div>
     </Link>
   );
 };
 
-const ActionButton = ({ title, description, link, color, isComingSoon }) => {
+const ActionButton = ({ title, description, link, icon, isComingSoon }) => {
   return (
     <Link
       to={isComingSoon ? '#' : link}
-      className={`block bg-gray-50 p-6 rounded-lg border-2 border-gray-200 transition ${isComingSoon ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:bg-gray-100 hover:border-primary-500'}`}
+      className={`group block p-6 rounded-2xl border border-gray-100 bg-gray-50/50 transition-all duration-300 ${isComingSoon ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:shadow-lg hover:shadow-teal-100/50 hover:border-teal-200'}`}
       onClick={(e) => isComingSoon && e.preventDefault()}
     >
-      <h3 className="text-base font-semibold text-gray-800 mb-2">{title}</h3>
-      <p className="text-gray-600 text-xs">{description}</p>
+      <div className="flex items-center gap-4">
+        <div className="p-3 bg-white rounded-xl shadow-sm group-hover:scale-110 transition-transform duration-300">
+          {icon}
+        </div>
+        <div>
+          <h3 className="text-sm font-bold text-gray-800 flex items-center gap-1 group-hover:text-teal-600 transition">
+            {title} {!isComingSoon && <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" />}
+          </h3>
+          <p className="text-gray-500 text-[10px] font-medium mt-0.5">{description}</p>
+        </div>
+      </div>
     </Link>
   );
 };

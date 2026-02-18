@@ -131,22 +131,22 @@ const CollaborationsPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">Collaborations</h1>
+    <div className="container mx-auto px-4 py-8 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Collaborations</h1>
         <button
           onClick={openRequestModal}
-          className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition flex items-center gap-2"
+          className="w-full sm:w-auto bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-md"
         >
           <Send className="h-5 w-5" />
           Send Request
         </button>
       </div>
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={() => setActiveTab('received')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg transition ${activeTab === 'received'
-            ? 'bg-teal-600 text-white'
+          className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition text-sm sm:text-base ${activeTab === 'received'
+            ? 'bg-teal-600 text-white shadow-md'
             : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
             }`}
         >
@@ -155,8 +155,8 @@ const CollaborationsPage = () => {
         </button>
         <button
           onClick={() => setActiveTab('sent')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg transition ${activeTab === 'sent'
-            ? 'bg-teal-600 text-white'
+          className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition text-sm sm:text-base ${activeTab === 'sent'
+            ? 'bg-teal-600 text-white shadow-md'
             : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
             }`}
         >
@@ -336,24 +336,25 @@ const CollaborationCard = ({ collaboration, type, onAccept, onReject, onViewDeta
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition">
-      <div className="flex items-start justify-between mb-4">
+    <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4 sm:p-6 hover:shadow-lg transition overflow-hidden">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-teal-100 rounded-lg flex items-center justify-center">
-            <Briefcase className="h-7 w-7 text-teal-600" />
+          <div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-teal-100 rounded-lg flex items-center justify-center">
+            <Briefcase className="h-6 w-6 sm:h-7 sm:sm:w-7 text-teal-600" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-800">{company?.companyName || 'Unknown Company'}</h3>
-            <p className="text-sm text-gray-500">{company?.companyType || 'N/A'}</p>
-            {company?.description && (
-              <p className="text-sm text-gray-600 mt-1">{company.description}</p>
-            )}
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 leading-tight">{company?.companyName || 'Unknown Company'}</h3>
+            <p className="text-xs sm:text-sm text-gray-500 font-medium">{company?.companyType || 'N/A'}</p>
           </div>
         </div>
-        <span className={`px-4 py-1.5 rounded-full text-sm font-semibold border ${statusColors[collaboration.status]}`}>
+        <span className={`self-start px-3 py-1 rounded-full text-xs font-bold border ${statusColors[collaboration.status]}`}>
           {collaboration.status}
         </span>
       </div>
+
+      {company?.description && (
+        <p className="text-xs sm:text-sm text-gray-600 mb-4 line-clamp-2">{company.description}</p>
+      )}
 
       {collaboration.message && (
         <div className="bg-gray-50 rounded-lg p-4 mb-4 border-l-4 border-teal-500">
@@ -362,46 +363,48 @@ const CollaborationCard = ({ collaboration, type, onAccept, onReject, onViewDeta
         </div>
       )}
 
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-        <div className="text-sm text-gray-500">
-          <span className="font-medium">Sent:</span> {format(new Date(collaboration.createdAt), 'PPp')}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 pt-4 border-t border-gray-100">
+        <div className="text-[10px] sm:text-xs text-gray-500">
+          <span className="font-semibold uppercase tracking-wider opacity-60">Sent</span>
+          <br className="sm:hidden" />
+          <span className="sm:ml-1 font-medium">{format(new Date(collaboration.createdAt), 'PPp')}</span>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           {collaboration.status === 'ACCEPTED' && (
             <button
               onClick={() => onOpenMessaging(collaboration)}
-              className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-xs font-bold shadow-sm"
             >
-              <MessageSquare className="h-4 w-4" />
+              <MessageSquare className="h-3.5 w-3.5" />
               Messages
             </button>
           )}
 
           <button
             onClick={() => onViewDetails(collaboration)}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
+            className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-xs font-bold"
           >
             View Details
           </button>
 
           {type === 'received' && collaboration.status === 'PENDING' && (
-            <>
+            <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={() => onAccept(collaboration.collaborationId)}
-                className="flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-sm font-medium"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-xs font-bold shadow-sm"
               >
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircle className="h-3.5 w-3.5" />
                 Accept
               </button>
               <button
                 onClick={() => onReject(collaboration.collaborationId)}
-                className="flex items-center gap-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm font-medium"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-xs font-bold shadow-sm"
               >
-                <XCircle className="h-4 w-4" />
+                <XCircle className="h-3.5 w-3.5" />
                 Reject
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>

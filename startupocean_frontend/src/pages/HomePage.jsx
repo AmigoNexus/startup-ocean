@@ -52,10 +52,10 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       {isAuthenticated && (
         <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white py-2">
-          <div className="container mx-auto px-3">
+          <div className="container mx-auto px-4">
             <h2 className="text-xl mt-2 font-semibold text-center">
               Welcome, <span className="font-bold">{user?.name || user?.email}</span>!
             </h2>
@@ -129,8 +129,8 @@ const HomePage = () => {
           <h2 className="text-xl font-bold text-center text-gray-800 mb-6">
             What Are You Looking For?
           </h2>
-          <div className="flex flex-col lg:flex-row gap-8 items-stretch">
-            <div className="grid md:grid-cols-2 gap-8 flex-1 w-auto h-auto shrink-0">
+          <div className="flex flex-col lg:flex-row gap-8">
+            <div className="grid sm:grid-cols-2 gap-8 flex-1">
 
               <div
                 onClick={() => navigate('/search?type=STARTUP')}
@@ -166,7 +166,7 @@ const HomePage = () => {
                 </p>
               </div>
             </div>
-            <div className="w-full lg:w-[380px] shrink-0 h-full">
+            <div className="w-full lg:w-[380px] h-full">
               <StartupTrendingNewsMini />
             </div>
           </div>

@@ -126,7 +126,7 @@ const CompanyDetails = ({
 
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   What do you do? (Max 250 chars) *
                 </label>
                 <textarea
@@ -144,7 +144,7 @@ const CompanyDetails = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Offerings & Specializations</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Offerings & Specializations</label>
                 <div className="space-y-2">
                   {formData.companyDetails[editingIndex].offerings.map((offering, offeringIndex) => (
                     <div key={offeringIndex} className="flex gap-2">

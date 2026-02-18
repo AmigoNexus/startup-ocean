@@ -205,23 +205,6 @@ const ProfilePage = () => {
                 <Value icon={<Mail className="h-5 w-5 text-red-500" />} value={user.email} />
               </Label>
 
-              <Label label="Phone Number">
-                {isEditing ? (
-                  <input
-                    type="tel"
-                    pattern="[0-9]{10}"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    value={formData.phoneNumber}
-                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                    placeholder="1234567890"
-                  />
-                ) : (
-                  <Value
-                    icon={<Phone className="h-5 w-5 text-green-600" />}
-                    value={user.company?.phoneNumber || user.phoneNumber || 'Not provided'}
-                  />
-                )}
-              </Label>
             </div>
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex justify-between mb-6">
@@ -245,9 +228,15 @@ const ProfilePage = () => {
                         <div className="p-2 bg-teal-100 rounded-lg text-teal-600">
                           {service.type === 'STARTUP' ? <Building2 className="h-5 w-5" /> : <Shield className="h-5 w-5" />}
                         </div>
-                        <h4 className="font-bold text-gray-800">
-                          {service.type === 'STARTUP' ? 'Startup Company' : 'Service Provider'}
-                        </h4>
+                        <div>
+                          <h4 className="font-bold text-gray-800">
+                            {service.type === 'STARTUP' ? 'Startup Company' : 'Service Provider'}
+                          </h4>
+                          <p className="text-xs font-semibold text-teal-600 flex items-center gap-1.5 mt-0.5">
+                            <Phone className="h-3 w-3 text-teal-500" />
+                            {service.phoneNumber || user.company?.phoneNumber || user.phoneNumber || 'Not provided'}
+                          </p>
+                        </div>
                       </div>
                       <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                         {service.description || 'No description provided.'}
