@@ -20,7 +20,7 @@ public class ServiceEntity {
     @Column(name = "service_id")
     private Long serviceId;
 
-    @Column(length = 150, nullable = false)
+    @Column(length = 250, nullable = false)
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -30,6 +30,12 @@ public class ServiceEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "is_phone_visible")
+    private Boolean isPhoneVisible = true;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

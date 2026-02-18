@@ -56,7 +56,7 @@ const HomePage = () => {
       {isAuthenticated && (
         <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white py-2">
           <div className="container mx-auto px-3">
-            <h2 className="text-lg font-semibold text-center">
+            <h2 className="text-xl mt-2 font-semibold text-center">
               Welcome, <span className="font-bold">{user?.name || user?.email}</span>!
             </h2>
           </div>
@@ -87,8 +87,7 @@ const HomePage = () => {
             {/* RIGHT SIDE - Description & Search */}
             <div className="flex-1 text-center lg:text-left">
               <p className="text-base mb-6 max-w-xl mx-auto lg:mx-0">
-                Connecting Startups & Service Providers Under One Umbrella<br />
-                Platform Created for Startup. Service Providers. Founders. Investors.
+                A unified platform connecting startups, service providers, founders, and investors under one ecosystem
               </p>
 
               {/* SEARCH BOX */}

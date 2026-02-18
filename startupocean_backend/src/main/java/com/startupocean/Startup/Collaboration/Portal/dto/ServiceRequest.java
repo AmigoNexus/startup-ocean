@@ -12,5 +12,7 @@ public class ServiceRequest {
     private List<String> offerings;
 
     private String type;
+    private String phoneNumber;
+    private Boolean isPhoneVisible;
 
 }

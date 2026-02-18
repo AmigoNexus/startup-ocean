@@ -9,5 +9,6 @@ public class ServiceResponse {
     private String type;
     private String description;
     private List<String> offerings;
+    private String phoneNumber;
+    private Boolean isPhoneVisible;
 }
-

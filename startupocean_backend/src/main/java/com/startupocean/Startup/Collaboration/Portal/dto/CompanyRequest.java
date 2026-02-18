@@ -23,8 +23,6 @@ public class CompanyRequest {
     private String email;
 
     private SocialLinkRequest socialLinks;
-    @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits")
-    private String phoneNumber;
 
     private List<ServiceRequest> services;
 

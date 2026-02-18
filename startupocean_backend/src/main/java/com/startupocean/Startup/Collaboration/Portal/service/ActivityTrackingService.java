@@ -6,7 +6,6 @@ import com.startupocean.Startup.Collaboration.Portal.entity.UserActivity;
 import com.startupocean.Startup.Collaboration.Portal.repository.UserActivityRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,6 @@ public class ActivityTrackingService {
     private final UserActivityRepository userActivityRepository;
 
     @Transactional
-    @Async
     public ApiResponse trackActivity(ActivityTrackingRequest request, HttpServletRequest httpRequest) {
         UserActivity activity = new UserActivity();
 

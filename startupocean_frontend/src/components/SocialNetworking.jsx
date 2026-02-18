@@ -54,9 +54,15 @@ const SocialNetworking = ({ formData, setFormData }) => {
                 <Icon className="w-5 h-5" />
               </div>
               <input
-                type="url"
+                type="text"
                 value={formData[link.key]}
                 onChange={(e) => setFormData({ ...formData, [link.key]: e.target.value })}
+                onBlur={(e) => {
+                  let val = e.target.value.trim();
+                  if (val && !/^https?:\/\//i.test(val)) {
+                    setFormData({ ...formData, [link.key]: `https://${val}` });
+                  }
+                }}
                 className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 placeholder={link.placeholder}
               />

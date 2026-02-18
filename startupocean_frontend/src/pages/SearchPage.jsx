@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Briefcase, Mail, Phone, Globe, UserPlus, Eye, X, Building2, Linkedin, Facebook, Instagram, Twitter, Lock, MapPin } from 'lucide-react';
+import { Briefcase, Mail, Phone, Globe, UserPlus, Eye, X, Building2, Linkedin, Facebook, Instagram, Twitter, Lock, MapPin, Share2 } from 'lucide-react';
 import { collaborationAPI, companyAPI, trackActivity } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -52,18 +52,30 @@ const SearchPage = () => {
       setLoading(true);
       const res = await companyAPI.getAll(null);
       const list = res.data.data || [];
-      const realCompanies = list.map((c) => ({
-        companyId: c.companyId,
-        companyName: c.companyName,
-        companyType: c.services?.[0]?.type || "UNKNOWN",
-        description: c.services?.[0]?.description || "",
-        offerings: c.offerings || [],
-        email: c.email,
-        phoneNumber: c.phoneNumber,
-        socialLinks: c.socialLinks || {},
-        services: c.services || [],
-        city: c.city
-      }));
+      const realCompanies = list.map((c) => {
+        const serviceOfferings = c.services?.reduce((acc, service) => {
+          if (service.offerings && Array.isArray(service.offerings)) {
+            return [...acc, ...service.offerings];
+          }
+          return acc;
+        }, []) || [];
+
+        const allOfferings = [...new Set([...(c.offerings || []), ...serviceOfferings])].filter(o => o && o.trim() !== "");
+
+        return {
+          companyId: c.companyId,
+          companyName: c.companyName,
+          companyType: c.services?.[0]?.type || "UNKNOWN",
+          description: c.services?.[0]?.description || c.description || "",
+          offerings: allOfferings,
+          email: c.email,
+          phoneNumber: c.services?.[0]?.phoneNumber || c.phoneNumber,
+          isPhoneVisible: c.services?.[0]?.isPhoneVisible ?? c.isPhoneVisible ?? true,
+          socialLinks: c.socialLinks || {},
+          services: c.services || [],
+          city: c.city
+        };
+      });
       setCompanies(realCompanies);
     } catch (err) {
       console.error("Failed to fetch companies", err);
@@ -164,6 +176,7 @@ const SearchPage = () => {
               onConnect={openConnectModal}
               isAuthenticated={isAuthenticated}
               navigate={navigate}
+              activeFilter={companyType}
             />
           ))}
         </div>
@@ -263,16 +276,10 @@ const SearchPage = () => {
 
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber) return 'Not provided';
-
-  const length = phoneNumber.length;
-  if (length <= 4) return phoneNumber;
-
-  const visibleDigits = phoneNumber.slice(-4);
-  const maskedPart = '*'.repeat(length - 4);
-  return maskedPart + visibleDigits;
+  return '**********';
 };
 
-const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navigate }) => {
+const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navigate, activeFilter }) => {
   const handleViewProfile = () => {
     if (!isAuthenticated) {
       toast('Please login to view company profile');
@@ -281,6 +288,10 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
     }
     onViewDetails(company);
   };
+
+  const displayService = (activeFilter === 'ALL' || !activeFilter)
+    ? company.services?.[0]
+    : company.services?.find(s => s.type === activeFilter) || company.services?.[0];
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition flex flex-col relative overflow-hidden">
@@ -293,25 +304,29 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
-            <Briefcase className="h-6 w-6 text-teal-400" />
+            {displayService?.type === 'SERVICE_PROVIDER' ? <Share2 className="h-6 w-6 text-teal-400" /> : <Briefcase className="h-6 w-6 text-teal-400" />}
           </div>
           <div>
             <h3 className="text-xl font-bold text-gray-800">{company.companyName}</h3>
-            <div className="flex flex-wrap gap-1">
+            {company.email && (
+              <a
+                href={`mailto:${company.email}`}
+                className="text-xs font-medium text-teal-600 flex items-center gap-1.5 mt-1 hover:text-teal-700 transition"
+              >
+                <Mail className="h-3.5 w-3.5 text-teal-500" />
+                <span className="truncate max-w-[180px]">{company.email}</span>
+              </a>
+            )}
+            <div className="flex flex-wrap gap-1 mt-2">
               {company.services?.map((s, idx) => (
                 <span key={idx} className="text-[10px] uppercase font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
                   {s.type.replace('_', ' ')}
                 </span>
               ))}
-              {(!company.services || company.services.length === 0) && (
-                <span className="text-sm text-gray-500">{company.companyType}</span>
-              )}
             </div>
           </div>
         </div>
       </div>
-
-      <p className="text-gray-600 mb-4 line-clamp-3">{company.description}</p>
 
       {company.offerings && company.offerings.length > 0 && (
         <div className="mb-4">
@@ -334,7 +349,7 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
       <div className="mt-auto flex gap-3 pt-4 border-t border-gray-200">
         <button
           onClick={handleViewProfile}
-          className="flex-1 flex items-center justify-center gap-2 border border-teal-400 text-teal-400 px-4 py-2 rounded-lg hover:bg-teal-50 transition font-medium"
+          className="flex-1 flex items-center justify-center gap-2 border-2 border-teal-500 text-teal-600 px-4 py-2 rounded-lg hover:bg-teal-50 transition font-bold text-sm"
         >
           <Eye className="h-4 w-4" />
           View Profile
@@ -342,7 +357,7 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
 
         <button
           onClick={() => onConnect(company)}
-          className="flex-1 flex items-center justify-center gap-2 bg-teal-400 text-white px-4 py-2 rounded-lg hover:bg-teal-500 transition font-medium"
+          className="flex-1 flex items-center justify-center gap-2 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition font-bold text-sm shadow-md shadow-teal-100"
         >
           <UserPlus className="h-4 w-4" />
           Connect
@@ -354,7 +369,6 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
 
 const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, navigate }) => {
   const hasSocialLinks = company.socialLinks && Object.values(company.socialLinks).some(v => !!v);
-  const hasContact = !!(company.email || company.phoneNumber);
 
   const socialIconMap = {
     website: <Globe className="h-5 w-5 text-teal-400" />,
@@ -365,176 +379,142 @@ const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, nav
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8">
-        <div className="flex justify-between items-start mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Company Profile</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-xl"
-          >
-            <X className="h-6 w-6" />
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="sticky top-0 bg-white border-b border-gray-100 p-6 flex justify-between items-center z-10">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">{company.companyName}</h2>
+            {company.city && (
+              <p className="text-xs font-bold text-gray-500 flex items-center gap-1 uppercase mt-1 tracking-wider">
+                <MapPin className="h-3 w-3 text-teal-500" /> {company.city}
+              </p>
+            )}
+            {company.email && (
+              <p className="text-xs font-medium text-teal-600 flex items-center gap-1 mt-1 lowercase">
+                <Mail className="h-3 w-3 text-teal-500" /> {company.email}
+              </p>
+            )}
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
+            <X className="h-6 w-6 text-gray-400" />
           </button>
         </div>
-        <div className="bg-gradient-to-r from-teal-50 to-teal-100 rounded-lg p-6 mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 bg-teal-400 rounded-lg flex items-center justify-center">
-              <Building2 className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-xl font-bold text-gray-800">{company.companyName}</h3>
-                {company.city && (
-                  <span className="flex items-center gap-1 text-[10px] font-bold bg-teal-500 text-white px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                    <MapPin className="h-3 w-3" />
-                    {company.city}
-                  </span>
-                )}
+
+        <div className="p-8 space-y-8">
+          <div className="space-y-6">
+            {company.services?.map((service, sIdx) => (
+              <div key={sIdx} className="bg-gray-50 border border-gray-200 rounded-xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-teal-600 text-white px-3 py-1 text-[10px] font-bold uppercase rounded-bl-lg">
+                  {service.type.replace('_', ' ')}
+                </div>
+
+                <div className="space-y-4">
+                  {service.description && (
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase mb-1">Description</h4>
+                      <p className="text-gray-700 leading-relaxed text-sm italic">"{service.description}"</p>
+                    </div>
+                  )}
+
+                  {service.offerings && service.offerings.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Offerings & Expertise</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {service.offerings.map((o, oIdx) => (
+                          <span key={oIdx} className="bg-white border border-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
+                            {o}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="pt-4 border-t border-gray-200">
+                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Contact Details</h4>
+                    <div className="space-y-2">
+                      {isAuthenticated ? (
+                        <div className="space-y-3">
+                          {service.phoneNumber && (
+                            <div className="flex items-center gap-3 text-gray-700">
+                              <Phone className="h-5 w-5 text-teal-400" />
+                              <span className="text-sm font-bold text-gray-800 tracking-wide">
+                                {service.isPhoneVisible ? service.phoneNumber : maskPhoneNumber(service.phoneNumber)}
+                              </span>
+                              {!service.isPhoneVisible && <Lock className="h-3 w-3 text-gray-300" />}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-xs text-gray-400 italic">
+                          <Lock className="h-3 w-3 text-gray-300" />
+                          <span>Login to view specific contacts</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {company.services?.map((s, idx) => (
-                  <span key={idx} className="text-xs uppercase font-bold bg-white text-teal-600 px-2 py-1 rounded shadow-sm border border-teal-200">
-                    {s.type.replace('_', ' ')}
-                  </span>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
 
-          {company.description && (
-            <div className="mt-4">
-              <p className="text-gray-700 leading-relaxed">{company.description}</p>
+          {!isAuthenticated && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Lock className="h-5 w-5 text-yellow-600" />
+                <p className="text-xs text-yellow-700">Detailed contact information is restricted to logged-in users only.</p>
+              </div>
+              <button
+                onClick={() => { onClose(); navigate('/login'); }}
+                className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg text-xs font-bold hover:bg-yellow-200 transition whitespace-nowrap"
+              >
+                Login Now
+              </button>
+            </div>
+          )}
+
+          {/* Social Links Section */}
+          {company.socialLinks && Object.values(company.socialLinks).some(v => v) && (
+            <div className="pt-6 border-t border-gray-100">
+              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Connect with Us</h3>
+              <div className="flex flex-wrap gap-4">
+                {Object.entries(company.socialLinks).map(([key, value]) => {
+                  if (!value) return null;
+
+                  // Ensure URL has protocol
+                  const url = value.startsWith('http') ? value : `https://${value}`;
+
+                  return (
+                    <a
+                      key={key}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full hover:border-teal-500 hover:text-teal-600 transition shadow-sm group"
+                    >
+                      <span className="group-hover:scale-110 transition duration-200">
+                        {socialIconMap[key]}
+                      </span>
+                      <span className="text-xs font-bold">
+                        {key === 'website' ? value.replace(/^https?:\/\//, '').replace(/\/$/, '') : key}
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
-        {hasContact && (
-          <div className="mb-6">
-            <h4 className="text-lg font-semibold text-gray-800 mb-3">Contact Information</h4>
 
-            {isAuthenticated ? (
-              <div className="space-y-3">
-                {company.email && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Mail className="h-5 w-5 text-teal-400" />
-                    <a href={`mailto:${company.email}`} className="text-teal-400 hover:underline">
-                      {company.email}
-                    </a>
-                  </div>
-                )}
-                {company.phoneNumber && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Phone className="h-5 w-5 text-teal-400" />
-                    <span className="text-teal-500 font-medium">
-                      {maskPhoneNumber(company.phoneNumber)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {company.email && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-500">***@***.com</span>
-                  </div>
-                )}
-                {company.phoneNumber && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Phone className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-500">{maskPhoneNumber(company.phoneNumber)}</span>
-                  </div>
-                )}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center gap-3 mt-3">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500">
-                      Full contact details are visible to logged-in users only.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      onClose();
-                      navigate('/login');
-                    }}
-                    className="text-sm bg-teal-400 text-white px-4 py-2 rounded-lg hover:bg-teal-500 transition font-medium whitespace-nowrap"
-                  >
-                    Login to view
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {company.offerings && company.offerings.length > 0 && (
-          <div className="mb-6">
-            <h4 className="text-lg font-semibold text-gray-800 mb-3">Offerings / Specialization</h4>
-            <div className="flex flex-wrap gap-2">
-              {company.offerings.map((offering, index) => (
-                <span
-                  key={index}
-                  className="bg-teal-100 text-teal-500 px-4 py-2 rounded-full text-sm font-medium"
-                >
-                  {offering}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-        {hasSocialLinks && (
-          <div className="mb-6">
-            <h4 className="text-lg font-semibold text-gray-800 mb-3">Social Links</h4>
-
-            {isAuthenticated ? (
-              <div className="space-y-3">
-                {Object.entries(company.socialLinks).map(([key, value]) =>
-                  value ? (
-                    <div key={key} className="flex items-center gap-3">
-                      {socialIconMap[key] || <Globe className="h-5 w-5 text-teal-400" />}
-                      <a
-                        href={value}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-teal-400 hover:underline truncate capitalize"
-                      >
-                        {key} — {value}
-                      </a>
-                    </div>
-                  ) : null
-                )}
-              </div>
-            ) : (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center gap-3">
-                <Lock className="h-5 w-5 text-gray-400" />
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500">
-                    Social links are visible to logged-in users only.
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    onClose();
-                    navigate('/login');
-                  }}
-                  className="text-sm bg-teal-400 text-white px-4 py-2 rounded-lg hover:bg-teal-500 transition font-medium whitespace-nowrap"
-                >
-                  Login to view
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-        <div className="flex gap-3 pt-4 border-t border-gray-200">
+        <div className="p-6 bg-gray-50 flex gap-4 border-t border-gray-100">
           <button
             onClick={() => onConnect(company)}
-            className="flex-1 flex items-center justify-center gap-2 bg-teal-400 text-white py-3 rounded-lg hover:bg-teal-500 transition font-semibold"
+            className="flex-1 bg-teal-600 text-white py-3 rounded-xl hover:bg-teal-700 transition font-bold shadow-lg shadow-teal-100 flex items-center justify-center gap-2"
           >
-            <UserPlus className="h-5 w-5" />
-            Send Connection Request
+            <UserPlus className="h-5 w-5" /> Send Connection
           </button>
           <button
             onClick={onClose}
-            className="px-8 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold"
+            className="px-8 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-bold"
           >
             Close
           </button>

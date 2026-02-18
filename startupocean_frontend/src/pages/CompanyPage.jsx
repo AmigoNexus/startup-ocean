@@ -20,12 +20,13 @@ const CompanyPage = () => {
       twitter: '',
     },
     phoneNumber: '',
+    isPhoneVisible: true,
     email: '',
   });
-
   const [requireSequentialFill, setRequireSequentialFill] = useState(false);
   const [showCompanyTypeSelection, setShowCompanyTypeSelection] = useState(false);
   const [editingIndex, setEditingIndex] = useState(0);
+  const [phoneError, setPhoneError] = useState('');
 
   useEffect(() => {
     fetchCompany();
@@ -41,16 +42,29 @@ const CompanyPage = () => {
 
         let initialCompanyDetails = [];
         if (data.services && data.services.length > 0) {
-          initialCompanyDetails = data.services.map(s => ({
-            type: typeof s === 'object' ? s.type : s,
-            description: s.description || '',
-            offerings: (s.offerings && s.offerings.length > 0) ? s.offerings : ['']
-          }));
+          initialCompanyDetails = data.services.map(s => {
+            const type = typeof s === 'object' ? s.type : s;
+            let serviceOfferings = (s.offerings && s.offerings.length > 0) ? s.offerings : [];
+
+            if (serviceOfferings.length === 0 && data.offerings && data.offerings.length > 0 && type === data.companyType) {
+              serviceOfferings = data.offerings;
+            }
+
+            return {
+              type: type,
+              description: s.description || '',
+              offerings: serviceOfferings.length > 0 ? [...serviceOfferings] : [''],
+              phoneNumber: s.phoneNumber || data.phoneNumber || '',
+              isPhoneVisible: s.isPhoneVisible ?? data.isPhoneVisible ?? true
+            };
+          });
         } else {
           initialCompanyDetails = [{
             type: data.companyType || 'STARTUP',
             description: data.description || '',
-            offerings: data.offerings && data.offerings.length > 0 ? data.offerings : ['']
+            offerings: data.offerings && data.offerings.length > 0 ? [...data.offerings] : [''],
+            phoneNumber: data.phoneNumber || '',
+            isPhoneVisible: data.isPhoneVisible ?? true
           }];
         }
 
@@ -68,6 +82,7 @@ const CompanyPage = () => {
             twitter: '',
           },
           phoneNumber: data.phoneNumber || '',
+          isPhoneVisible: data.isPhoneVisible ?? true,
           email: data.email || '',
         });
 
@@ -92,13 +107,16 @@ const CompanyPage = () => {
       const payload = {
         companyName: formData.companyName,
         phoneNumber: formData.phoneNumber,
+        isPhoneVisible: formData.isPhoneVisible,
         socialLinks: formData.socialLinks,
 
         services: formData.companyDetails.map(d => ({
           type: typeof d.type === "object" ? d.type.type : String(d.type),
 
           description: d.description || "",
-          offerings: d.offerings?.filter(o => o && o.trim()) || []
+          offerings: d.offerings?.filter(o => o && o.trim()) || [],
+          phoneNumber: d.phoneNumber,
+          isPhoneVisible: d.isPhoneVisible
         }))
       };
 
@@ -135,6 +153,7 @@ const CompanyPage = () => {
   };
 
   const confirmAddCompanyDetail = (type) => {
+    const newIndex = formData.companyDetails.length;
     setFormData({
       ...formData,
       companyDetails: [
@@ -142,10 +161,13 @@ const CompanyPage = () => {
         {
           type: type,
           description: '',
-          offerings: ['']
+          offerings: [''],
+          phoneNumber: formData.phoneNumber || '',
+          isPhoneVisible: formData.isPhoneVisible ?? true
         }
       ]
     });
+    setEditingIndex(newIndex);
     setShowCompanyTypeSelection(false);
   };
 
@@ -156,26 +178,32 @@ const CompanyPage = () => {
 
   const updateCompanyDetail = (index, field, value) => {
     const newDetails = [...formData.companyDetails];
-    newDetails[index][field] = value;
+    newDetails[index] = { ...newDetails[index], [field]: value };
     setFormData({ ...formData, companyDetails: newDetails });
   };
 
   const addOffering = (companyIndex) => {
     const newDetails = [...formData.companyDetails];
-    newDetails[companyIndex].offerings.push('');
+    newDetails[companyIndex] = {
+      ...newDetails[companyIndex],
+      offerings: [...newDetails[companyIndex].offerings, '']
+    };
     setFormData({ ...formData, companyDetails: newDetails });
   };
 
   const updateOffering = (companyIndex, offeringIndex, value) => {
     const newDetails = [...formData.companyDetails];
-    newDetails[companyIndex].offerings[offeringIndex] = value;
+    const newOfferings = [...newDetails[companyIndex].offerings];
+    newOfferings[offeringIndex] = value;
+    newDetails[companyIndex] = { ...newDetails[companyIndex], offerings: newOfferings };
     setFormData({ ...formData, companyDetails: newDetails });
   };
 
   const removeOffering = (companyIndex, offeringIndex) => {
     const newDetails = [...formData.companyDetails];
     if (newDetails[companyIndex].offerings.length > 1) {
-      newDetails[companyIndex].offerings = newDetails[companyIndex].offerings.filter((_, i) => i !== offeringIndex);
+      const newOfferings = newDetails[companyIndex].offerings.filter((_, i) => i !== offeringIndex);
+      newDetails[companyIndex] = { ...newDetails[companyIndex], offerings: newOfferings };
       setFormData({ ...formData, companyDetails: newDetails });
     }
   };
@@ -203,6 +231,7 @@ const CompanyPage = () => {
             <div>
               <CompanyDetails
                 formData={formData}
+                setFormData={setFormData}
                 showCompanyTypeSelection={showCompanyTypeSelection}
                 setShowCompanyTypeSelection={setShowCompanyTypeSelection}
                 addCompanyDetail={addCompanyDetail}
@@ -216,6 +245,8 @@ const CompanyPage = () => {
                 setRequireSequentialFill={setRequireSequentialFill}
                 editingIndex={editingIndex}
                 setEditingIndex={setEditingIndex}
+                phoneError={phoneError}
+                setPhoneError={setPhoneError}
                 onAllSaved={() => { }}
               />
             </div>
@@ -224,11 +255,11 @@ const CompanyPage = () => {
               <div className="space-y-4">
                 {['website', 'linkedin', 'facebook', 'instagram', 'twitter'].map((platform) => (
                   <div key={platform}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       {platform}
                     </label>
                     <input
-                      type="url"
+                      type="text"
                       placeholder={`https://${platform}.com/yourcompany`}
                       value={formData.socialLinks[platform] || ''}
                       onChange={(e) =>
@@ -237,6 +268,15 @@ const CompanyPage = () => {
                           socialLinks: { ...formData.socialLinks, [platform]: e.target.value },
                         })
                       }
+                      onBlur={(e) => {
+                        let val = e.target.value.trim();
+                        if (val && !/^https?:\/\//i.test(val)) {
+                          setFormData({
+                            ...formData,
+                            socialLinks: { ...formData.socialLinks, [platform]: `https://${val}` },
+                          });
+                        }
+                      }}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     />
                   </div>

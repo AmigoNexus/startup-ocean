@@ -36,7 +36,6 @@ public class CompanyService {
         Company company = new Company();
         company.setEmail(request.getEmail());
         company.setCompanyName(request.getCompanyName());
-        company.setPhoneNumber(request.getPhoneNumber());
         company.setCity(request.getCity());
         company.setIsActive(true);
 
@@ -49,6 +48,17 @@ public class CompanyService {
                 service.setCompany(savedCompany);
                 service.setDescription(s.getDescription());
                 service.setType(Company.CompanyType.valueOf(s.getType()));
+                service.setPhoneNumber(
+                        s.getPhoneNumber() != null && !s.getPhoneNumber().isBlank()
+                                ? s.getPhoneNumber()
+                                : null
+                );
+
+                service.setIsPhoneVisible(
+                        s.getIsPhoneVisible() != null
+                                ? s.getIsPhoneVisible()
+                                : true
+                );
 
                 ServiceEntity savedService = CompanyServiceRepository.save(service);
 
@@ -99,7 +109,6 @@ public class CompanyService {
         }
 
         company.setCompanyName(request.getCompanyName());
-        company.setPhoneNumber(request.getPhoneNumber());
         company.setCity(request.getCity());
 
         Company updatedCompany = companyRepository.save(company);
@@ -116,7 +125,20 @@ public class CompanyService {
                 service.setDescription(s.getDescription());
                 service.setType(Company.CompanyType.valueOf(s.getType()));
 
-                ServiceEntity savedService = CompanyServiceRepository.save(service);
+                service.setPhoneNumber(
+                        s.getPhoneNumber() != null && !s.getPhoneNumber().isBlank()
+                                ? s.getPhoneNumber()
+                                : null
+                );
+
+                service.setIsPhoneVisible(
+                        s.getIsPhoneVisible() != null
+                                ? s.getIsPhoneVisible()
+                                : true
+                );
+
+                ServiceEntity savedService =
+                        CompanyServiceRepository.save(service);
 
                 if (s.getOfferings() != null) {
                     for (String offeringName : s.getOfferings()) {
@@ -216,33 +238,33 @@ public class CompanyService {
         response.setCompanyId(company.getCompanyId());
         response.setCompanyName(company.getCompanyName());
         response.setEmail(company.getEmail());
-        response.setPhoneNumber(company.getPhoneNumber());
         response.setCity(company.getCity());
         response.setCreatedAt(company.getCreatedAt());
 
-        List<ServiceResponse> services = CompanyServiceRepository
-                .findByCompany(company)
+        List<ServiceEntity> serviceEntities =
+                CompanyServiceRepository.findByCompany(company);
+        List<ServiceResponse> services = serviceEntities
                 .stream()
                 .map(service -> {
                     ServiceResponse sr = new ServiceResponse();
                     sr.setType(service.getType().name());
                     sr.setDescription(service.getDescription());
+                    sr.setPhoneNumber(service.getPhoneNumber());
+                    sr.setIsPhoneVisible(service.getIsPhoneVisible());
+
+                    List<String> offerings = offeringRepository
+                            .findByServiceAndIsActiveTrue(service)
+                            .stream()
+                            .map(Offering::getOfferingName)
+                            .collect(Collectors.toList());
+
+                    sr.setOfferings(offerings);
+
                     return sr;
                 })
                 .collect(Collectors.toList());
 
         response.setServices(services);
-
-        List<String> offeringNames = CompanyServiceRepository
-                .findByCompany(company)
-                .stream()
-                .flatMap(service ->
-                        offeringRepository.findByServiceAndIsActiveTrue(service).stream()
-                )
-                .map(Offering::getOfferingName)
-                .collect(Collectors.toList());
-
-        response.setOfferings(offeringNames);
 
         SocialLink socialLink = socialLinkRepository
                 .findByCompanyAndIsActiveTrue(company)

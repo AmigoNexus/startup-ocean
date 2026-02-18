@@ -143,35 +143,7 @@ const BasicInformation = ({
         )}
       </div>
 
-      <div>
-        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-        <input
-          type="tel"
-          value={formData.phoneNumber}
-          onChange={(e) => {
-            setFormData({ ...formData, phoneNumber: e.target.value });
-            if (phoneError) setPhoneError('');
-          }}
-          onBlur={() => {
-            const phone = formData.phoneNumber?.trim();
-            if (phone) {
-              const digits = phone.replace(/\D/g, '');
-              const isMobile = /^\d{10}$/.test(digits);
-              const isLandline = /^\d{6,12}$/.test(digits);
-              if (!isMobile && !isLandline) {
-                setPhoneError('Enter a valid phone number: 10-digit mobile or 6–12 digit landline');
-              } else {
-                setPhoneError('');
-              }
-            } else {
-              setPhoneError('');
-            }
-          }}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-          placeholder="1234567890"
-        />
-        {phoneError && <p className="text-xs text-red-600 mt-1">{phoneError}</p>}
-      </div>
+
 
       {/* City */}
       <div className="relative overflow-visible">
@@ -188,7 +160,6 @@ const BasicInformation = ({
               value={formData.city || ''}
               autoComplete="off"
               onFocus={() => {
-                // If focused, open the dropdown and overlay
                 const dropdown = document.getElementById('city-dropdown');
                 const overlay = document.getElementById('city-dropdown-overlay');
                 if (dropdown) dropdown.classList.remove('hidden');
