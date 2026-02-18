@@ -121,13 +121,19 @@ const Register = () => {
         otp: otp.trim(),
       });
 
-      if (response.data.success && response.data.data) {
-        setTempVerifiedData(response.data.data);
+      if (response.data.success) {
+        if (response.data.data) {
+          setTempVerifiedData(response.data.data);
+        }
+
+        setIsEmailVerified(true);
+        setIsOtpSent(false);
+        toast.success('Email verified');
+      } else {
+        toast.error(response.data.message || "Invalid OTP");
+        setOtp('');
       }
 
-      setIsEmailVerified(true);
-      setIsOtpSent(false);
-      toast.success('Email verified');
     } catch (err) {
       console.error('OTP verify failed', err);
       toast.error('Invalid OTP. Please try again');
