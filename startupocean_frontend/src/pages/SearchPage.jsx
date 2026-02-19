@@ -296,7 +296,7 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition flex flex-col relative overflow-hidden">
       {company.city && (
-        <div className="absolute top-0 right-0 bg-teal-200 text-gray-900 px-3 py-1 rounded-bl-lg flex items-center gap-1 shadow-sm z-10">
+        <div className="absolute top-0 right-0 bg-sky-100 text-gray-900 px-3 py-1 rounded-bl-lg flex items-center gap-1 shadow-sm z-10">
           <MapPin className="h-3 w-3" />
           <span className="text-[10px] font-bold   tracking-wider">{company.city}</span>
         </div>
@@ -357,7 +357,7 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
 
         <button
           onClick={() => onConnect(company)}
-          className="flex-1 flex items-center justify-center gap-2 bg-teal-300 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition font-bold text-sm shadow-md shadow-teal-100"
+          className="flex-1 flex items-center justify-center gap-2 bg-teal-500/80 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition font-bold text-sm shadow-md shadow-teal-100"
         >
           <UserPlus className="h-4 w-4" />
           Connect

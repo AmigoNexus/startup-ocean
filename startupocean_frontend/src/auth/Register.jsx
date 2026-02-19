@@ -322,7 +322,7 @@ const Register = () => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+    <div className="flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="w-full max-w-6xl bg-white shadow-2xl rounded-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[650px]">
 
         <div className="md:col-span-4 bg-gradient-to-br from-teal-600 to-teal-800 text-white p-8 flex flex-col justify-between">
