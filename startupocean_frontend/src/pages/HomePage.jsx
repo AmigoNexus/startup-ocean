@@ -53,15 +53,6 @@ const HomePage = () => {
 
   return (
     <div className="overflow-x-hidden">
-      {isAuthenticated && (
-        <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white py-2">
-          <div className="container mx-auto px-4">
-            <h2 className="text-xl mt-2 font-semibold text-center">
-              Welcome, <span className="font-bold">{user?.name || user?.email}</span>!
-            </h2>
-          </div>
-        </div>
-      )}
       <section className="bg-gradient-to-r from-primary-400 to-primary-500 text-white py-10">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">

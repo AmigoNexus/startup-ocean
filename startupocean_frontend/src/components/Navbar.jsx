@@ -50,6 +50,11 @@ const Navbar = () => {
                 <span>{link.label}</span>
               </Link>
             ))}
+            {isAuthenticated && (
+              <h2 className="text-sm  font-semibold text-center border-l-2 pl-4">
+                Welcome, <span className="font-bold">{user?.name || user?.email}</span>!
+              </h2>
+            )}
 
             {isAuthenticated ? (
               <div className="relative" ref={menuRef}>
