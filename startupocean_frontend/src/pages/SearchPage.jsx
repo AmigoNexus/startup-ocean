@@ -70,7 +70,7 @@ const SearchPage = () => {
           offerings: allOfferings,
           email: c.email,
           phoneNumber: c.services?.[0]?.phoneNumber || c.phoneNumber,
-          isPhoneVisible: c.services?.[0]?.isPhoneVisible ?? c.isPhoneVisible ?? true,
+          isPhoneHidden: c.services?.[0]?.isPhoneHidden ?? c.isPhoneHidden ?? false,
           socialLinks: c.socialLinks || {},
           services: c.services || [],
           city: c.city
@@ -223,7 +223,7 @@ const SearchPage = () => {
                 <h3 className="font-bold text-gray-800">{selectedCompany.companyName}</h3>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {selectedCompany.services?.map((s, idx) => (
-                    <span key={idx} className="text-[10px] uppercase font-bold text-teal-600">
+                    <span key={idx} className="text-[10px]   font-bold text-teal-600">
                       {s.type.replace('_', ' ')}
                       {idx < selectedCompany.services.length - 1 ? ' • ' : ''}
                     </span>
@@ -296,9 +296,9 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition flex flex-col relative overflow-hidden">
       {company.city && (
-        <div className="absolute top-0 right-0 bg-teal-500 text-white px-3 py-1 rounded-bl-lg flex items-center gap-1 shadow-sm z-10">
+        <div className="absolute top-0 right-0 bg-teal-200 text-gray-900 px-3 py-1 rounded-bl-lg flex items-center gap-1 shadow-sm z-10">
           <MapPin className="h-3 w-3" />
-          <span className="text-[10px] font-bold uppercase tracking-wider">{company.city}</span>
+          <span className="text-[10px] font-bold   tracking-wider">{company.city}</span>
         </div>
       )}
       <div className="flex items-start justify-between mb-4">
@@ -319,7 +319,7 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
             )}
             <div className="flex flex-wrap gap-1 mt-2">
               {company.services?.map((s, idx) => (
-                <span key={idx} className="text-[10px] uppercase font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                <span key={idx} className="text-[10px]   font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
                   {s.type.replace('_', ' ')}
                 </span>
               ))}
@@ -349,7 +349,7 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
       <div className="mt-auto flex gap-3 pt-4 border-t border-gray-200">
         <button
           onClick={handleViewProfile}
-          className="flex-1 flex items-center justify-center gap-2 border-2 border-teal-500 text-teal-600 px-4 py-2 rounded-lg hover:bg-teal-50 transition font-bold text-sm"
+          className="flex-1 flex items-center justify-center gap-2 border-2 border-teal-300 text-teal-400 px-4 py-2 rounded-lg hover:bg-teal-50 transition font-bold text-sm"
         >
           <Eye className="h-4 w-4" />
           View Profile
@@ -357,7 +357,7 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
 
         <button
           onClick={() => onConnect(company)}
-          className="flex-1 flex items-center justify-center gap-2 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition font-bold text-sm shadow-md shadow-teal-100"
+          className="flex-1 flex items-center justify-center gap-2 bg-teal-300 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition font-bold text-sm shadow-md shadow-teal-100"
         >
           <UserPlus className="h-4 w-4" />
           Connect
@@ -385,8 +385,8 @@ const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, nav
           <div>
             <h2 className="text-2xl font-bold text-gray-900">{company.companyName}</h2>
             {company.city && (
-              <p className="text-xs font-bold text-gray-500 flex items-center gap-1 uppercase mt-1 tracking-wider">
-                <MapPin className="h-3 w-3 text-teal-500" /> {company.city}
+              <p className="text-xs font-bold text-gray-500 flex items-center gap-1   mt-1 tracking-wider">
+                <MapPin className="h-3 w-3 text-teal-200" /> {company.city}
               </p>
             )}
             {company.email && (
@@ -404,21 +404,21 @@ const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, nav
           <div className="space-y-6">
             {company.services?.map((service, sIdx) => (
               <div key={sIdx} className="bg-gray-50 border border-gray-200 rounded-xl p-6 relative overflow-hidden">
-                <div className="absolute top-0 right-0 bg-teal-600 text-white px-3 py-1 text-[10px] font-bold uppercase rounded-bl-lg">
+                <div className="absolute top-0 right-0 bg-teal-400 text-white px-3 py-1 text-[10px] font-bold   rounded-bl-lg">
                   {service.type.replace('_', ' ')}
                 </div>
 
                 <div className="space-y-4">
                   {service.description && (
                     <div>
-                      <h4 className="text-xs font-bold text-gray-400 uppercase mb-1">Description</h4>
+                      <h4 className="text-xs font-bold text-gray-400   mb-1">Description</h4>
                       <p className="text-gray-700 leading-relaxed text-sm italic">"{service.description}"</p>
                     </div>
                   )}
 
                   {service.offerings && service.offerings.length > 0 && (
                     <div>
-                      <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Offerings & Expertise</h4>
+                      <h4 className="text-xs font-bold text-gray-400   mb-2">Offerings & Expertise</h4>
                       <div className="flex flex-wrap gap-2">
                         {service.offerings.map((o, oIdx) => (
                           <span key={oIdx} className="bg-white border border-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
@@ -430,7 +430,7 @@ const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, nav
                   )}
 
                   <div className="pt-4 border-t border-gray-200">
-                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Contact Details</h4>
+                    <h4 className="text-xs font-bold text-gray-400   mb-2">Contact Details</h4>
                     <div className="space-y-2">
                       {isAuthenticated ? (
                         <div className="space-y-3">
@@ -438,9 +438,9 @@ const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, nav
                             <div className="flex items-center gap-3 text-gray-700">
                               <Phone className="h-5 w-5 text-teal-400" />
                               <span className="text-sm font-bold text-gray-800 tracking-wide">
-                                {service.isPhoneVisible ? service.phoneNumber : maskPhoneNumber(service.phoneNumber)}
+                                {!service.isPhoneHidden ? service.phoneNumber : maskPhoneNumber(service.phoneNumber)}
                               </span>
-                              {!service.isPhoneVisible && <Lock className="h-3 w-3 text-gray-300" />}
+                              {service.isPhoneHidden && <Lock className="h-3 w-3 text-gray-300" />}
                             </div>
                           )}
                         </div>
@@ -475,7 +475,7 @@ const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, nav
           {/* Social Links Section */}
           {company.socialLinks && Object.values(company.socialLinks).some(v => v) && (
             <div className="pt-6 border-t border-gray-100">
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Connect with Us</h3>
+              <h3 className="text-sm font-bold text-gray-400 tracking-widest mb-4">Connect with Us</h3>
               <div className="flex flex-wrap gap-4">
                 {Object.entries(company.socialLinks).map(([key, value]) => {
                   if (!value) return null;
@@ -484,20 +484,24 @@ const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, nav
                   const url = value.startsWith('http') ? value : `https://${value}`;
 
                   return (
-                    <a
-                      key={key}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full hover:border-teal-500 hover:text-teal-600 transition shadow-sm group"
-                    >
-                      <span className="group-hover:scale-110 transition duration-200">
+                    <div key={key} className="flex items-center gap-4 group bg-gray-50/50 p-3 rounded-xl border border-transparent hover:border-teal-100 hover:bg-teal-50/30 transition-all">
+                      <div className="w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center group-hover:scale-110 transition-transform">
                         {socialIconMap[key]}
-                      </span>
-                      <span className="text-xs font-bold">
-                        {key === 'website' ? value.replace(/^https?:\/\//, '').replace(/\/$/, '') : key}
-                      </span>
-                    </a>
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[10px] font-black text-gray-400 tracking-wider mb-0.5">
+                          {key === 'website' ? 'Official Website' : key}
+                        </span>
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-bold text-teal-600 hover:text-teal-700 break-all leading-tight"
+                        >
+                          {value.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                        </a>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
@@ -508,7 +512,7 @@ const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, nav
         <div className="p-6 bg-gray-50 flex gap-4 border-t border-gray-100">
           <button
             onClick={() => onConnect(company)}
-            className="flex-1 bg-teal-600 text-white py-3 rounded-xl hover:bg-teal-700 transition font-bold shadow-lg shadow-teal-100 flex items-center justify-center gap-2"
+            className="flex-1 bg-teal-500 text-white py-3 rounded-xl hover:bg-teal-700 transition font-bold shadow-lg shadow-teal-100 flex items-center justify-center gap-2"
           >
             <UserPlus className="h-5 w-5" /> Send Connection
           </button>

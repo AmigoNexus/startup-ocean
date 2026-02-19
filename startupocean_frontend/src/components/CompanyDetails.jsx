@@ -66,7 +66,9 @@ const CompanyDetails = ({
           </div>
 
           <div className="space-y-4">
-            <p className="text-sm font-semibold text-gray-700 select-none">Register As *</p>
+            {window.location.pathname.includes('/register') && (
+              <p className="text-sm font-semibold text-gray-700 select-none">Register As *</p>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 type="button"
@@ -174,13 +176,13 @@ const CompanyDetails = ({
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={formData.companyDetails[editingIndex].isPhoneVisible ?? true}
-                      onChange={(e) => updateCompanyDetail(editingIndex, 'isPhoneVisible', e.target.checked)}
+                      checked={formData.companyDetails[editingIndex].isPhoneHidden ?? false}
+                      onChange={(e) => updateCompanyDetail(editingIndex, 'isPhoneHidden', e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                    <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500"></div>
                     <span className="ml-2 text-xs font-bold text-gray-600">
-                      {formData.companyDetails[editingIndex].isPhoneVisible !== false ? 'Public' : 'Hidden'}
+                      {formData.companyDetails[editingIndex].isPhoneHidden ? 'Hide' : 'Public'}
                     </span>
                   </label>
                 </div>

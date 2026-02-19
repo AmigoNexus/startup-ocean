@@ -10,14 +10,14 @@ const messageAPI = {
     send: (data) => axios.post(`${API_BASE_URL}/messages`, data, {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         }
     }),
     getByCollaboration: (collaborationId) => axios.get(`${API_BASE_URL}/messages/collaboration/${collaborationId}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
     }),
     markAsRead: (messageId) => axios.put(`${API_BASE_URL}/messages/${messageId}/read`, {}, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
     }),
 };
 

@@ -9,10 +9,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8025
 
 const messageAPI = {
     getUnreadCount: () => axios.get(`${API_BASE_URL}/messages/unread/count`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
     }),
     getByCollaboration: (collaborationId) => axios.get(`${API_BASE_URL}/messages/collaboration/${collaborationId}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
     }),
 };
 

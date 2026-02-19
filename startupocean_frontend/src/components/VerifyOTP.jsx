@@ -76,8 +76,8 @@ const VerifyOTP = () => {
       }
 
       const { token, ...userData } = response.data.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      sessionStorage.setItem('token', token);
+      sessionStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       const pendingData = localStorage.getItem('pendingCompanyData');
 

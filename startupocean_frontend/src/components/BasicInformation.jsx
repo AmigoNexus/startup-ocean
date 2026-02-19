@@ -175,7 +175,7 @@ const BasicInformation = ({
               className="absolute z-[100] mt-1 w-full max-h-60 bg-white border border-gray-200 rounded-lg shadow-xl overflow-y-auto hidden animate-in fade-in slide-in-from-top-2 duration-200"
             >
               <div className="p-2 sticky top-0 bg-white border-b border-gray-100">
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider px-2 py-1">Available Cities</p>
+                <p className="text-[10px] text-gray-400 font-bold tracking-wider px-2 py-1">Available Cities</p>
               </div>
               {cities.filter(c =>
                 !formData.city || c.cityName.toLowerCase().includes(formData.city.toLowerCase())

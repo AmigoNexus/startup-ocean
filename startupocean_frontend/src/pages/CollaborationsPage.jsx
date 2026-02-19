@@ -365,7 +365,7 @@ const CollaborationCard = ({ collaboration, type, onAccept, onReject, onViewDeta
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 pt-4 border-t border-gray-100">
         <div className="text-[10px] sm:text-xs text-gray-500">
-          <span className="font-semibold uppercase tracking-wider opacity-60">Sent</span>
+          <span className="font-semibold tracking-wider opacity-60">Sent</span>
           <br className="sm:hidden" />
           <span className="sm:ml-1 font-medium">{format(new Date(collaboration.createdAt), 'PPp')}</span>
         </div>

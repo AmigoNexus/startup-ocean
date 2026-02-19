@@ -8,6 +8,7 @@ const CompanyPage = () => {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     companyName: '',
+    city: '',
     description: '',
     companyType: '',
     companyDetails: [],
@@ -20,7 +21,7 @@ const CompanyPage = () => {
       twitter: '',
     },
     phoneNumber: '',
-    isPhoneVisible: true,
+    isPhoneHidden: false,
     email: '',
   });
   const [requireSequentialFill, setRequireSequentialFill] = useState(false);
@@ -55,7 +56,7 @@ const CompanyPage = () => {
               description: s.description || '',
               offerings: serviceOfferings.length > 0 ? [...serviceOfferings] : [''],
               phoneNumber: s.phoneNumber || data.phoneNumber || '',
-              isPhoneVisible: s.isPhoneVisible ?? data.isPhoneVisible ?? true
+              isPhoneHidden: s.isPhoneHidden ?? data.isPhoneHidden ?? false
             };
           });
         } else {
@@ -64,12 +65,13 @@ const CompanyPage = () => {
             description: data.description || '',
             offerings: data.offerings && data.offerings.length > 0 ? [...data.offerings] : [''],
             phoneNumber: data.phoneNumber || '',
-            isPhoneVisible: data.isPhoneVisible ?? true
+            isPhoneHidden: data.isPhoneHidden ?? false
           }];
         }
 
         setFormData({
           companyName: data.companyName || '',
+          city: data.city || '',
           description: data.description || '',
           companyType: data.companyType || 'STARTUP',
           offerings: data.offerings || [''],
@@ -82,7 +84,7 @@ const CompanyPage = () => {
             twitter: '',
           },
           phoneNumber: data.phoneNumber || '',
-          isPhoneVisible: data.isPhoneVisible ?? true,
+          isPhoneHidden: data.isPhoneHidden ?? false,
           email: data.email || '',
         });
 
@@ -106,8 +108,9 @@ const CompanyPage = () => {
     try {
       const payload = {
         companyName: formData.companyName,
+        city: formData.city,
         phoneNumber: formData.phoneNumber,
-        isPhoneVisible: formData.isPhoneVisible,
+        isPhoneHidden: formData.isPhoneHidden,
         socialLinks: formData.socialLinks,
 
         services: formData.companyDetails.map(d => ({
@@ -116,7 +119,7 @@ const CompanyPage = () => {
           description: d.description || "",
           offerings: d.offerings?.filter(o => o && o.trim()) || [],
           phoneNumber: d.phoneNumber,
-          isPhoneVisible: d.isPhoneVisible
+          isPhoneHidden: d.isPhoneHidden
         }))
       };
 
@@ -163,7 +166,7 @@ const CompanyPage = () => {
           description: '',
           offerings: [''],
           phoneNumber: formData.phoneNumber || '',
-          isPhoneVisible: formData.isPhoneVisible ?? true
+          isPhoneHidden: formData.isPhoneHidden ?? false
         }
       ]
     });

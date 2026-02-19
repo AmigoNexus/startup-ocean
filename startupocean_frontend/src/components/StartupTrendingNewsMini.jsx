@@ -101,9 +101,9 @@ export default function StartupTrendingNewsMini() {
   return (
     <div className="container mx-auto px-4  ">
       <div
-      onClick={() => handleClick(item)}
-      className="bg-white rounded-xl shadow-md border p-5 cursor-pointer hover:shadow-lg transition h-64 flex flex-col "
-    >
+        onClick={() => handleClick(item)}
+        className="bg-white rounded-xl shadow-md border p-5 cursor-pointer hover:shadow-lg transition h-64 flex flex-col "
+      >
         <h3 className="text-base font-bold text-center text-teal-600 mb-4">
           Trending Updates
         </h3>

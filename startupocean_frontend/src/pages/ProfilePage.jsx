@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Mail, Phone, Briefcase, Building2, Edit2, Save, X, Shield } from 'lucide-react';
+import { User, Mail, Phone, Briefcase, Building2, Edit2, Save, X, Shield, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { companyAPI } from '../services/api';
 import toast from 'react-hot-toast';
@@ -203,6 +203,10 @@ const ProfilePage = () => {
 
               <Label label="Email Address">
                 <Value icon={<Mail className="h-5 w-5 text-red-500" />} value={user.email} />
+              </Label>
+
+              <Label label="City">
+                <Value icon={<MapPin className="h-5 w-5 text-orange-500" />} value={user.company?.city || 'Not provided'} />
               </Label>
 
             </div>

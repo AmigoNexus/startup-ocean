@@ -17,7 +17,7 @@ const Register = () => {
     email: '',
     companyName: '',
     phoneNumber: '',
-    isPhoneVisible: true,
+    isPhoneHidden: false,
     companyDetails: [],
     website: '',
     linkedin: '',
@@ -184,7 +184,7 @@ const Register = () => {
           description: '',
           offerings: [''],
           phoneNumber: formData.phoneNumber || '',
-          isPhoneVisible: formData.isPhoneVisible ?? true
+          isPhoneHidden: formData.isPhoneHidden ?? false
         }
       ]
     });
@@ -242,15 +242,15 @@ const Register = () => {
 
     try {
       if (tempVerifiedData?.token) {
-        localStorage.setItem('token', tempVerifiedData.token);
-        localStorage.setItem('user', JSON.stringify(tempVerifiedData));
+        sessionStorage.setItem('token', tempVerifiedData.token);
+        sessionStorage.setItem('user', JSON.stringify(tempVerifiedData));
       }
 
       await companyAPI.create({
         email: formData.email,
         companyName: formData.companyName,
         phoneNumber: formData.companyDetails[0]?.phoneNumber || formData.phoneNumber,
-        isPhoneVisible: formData.companyDetails[0]?.isPhoneVisible ?? formData.isPhoneVisible,
+        isPhoneHidden: formData.companyDetails[0]?.isPhoneHidden ?? formData.isPhoneHidden,
         city: formData.city,
 
         services: formData.companyDetails.map(detail => ({
@@ -258,7 +258,7 @@ const Register = () => {
           description: detail.description,
           offerings: detail.offerings.filter(o => o.trim() !== ""),
           phoneNumber: detail.phoneNumber?.trim() || null,
-          isPhoneVisible: detail.isPhoneVisible ?? true
+          isPhoneHidden: detail.isPhoneHidden ?? false
         })),
 
         socialLinks: {
