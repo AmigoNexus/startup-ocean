@@ -27,39 +27,26 @@ public class AuthService {
             LoggerFactory.getLogger(AuthService.class);
 
     @Transactional
-    public ApiResponse sendOtp(String email) {
+    public ApiResponse sendOtp(String email, String template) {
 
         log.info("OTP request received for email: {}", email);
-        if (companyRepository.findByEmailAndIsActiveTrue(email).isPresent()) {
-            log.warn("OTP blocked - account already exists: {}", email);
 
-            return new ApiResponse(
-                    false,
+        if (companyRepository.findByEmailAndIsActiveTrue(email).isPresent()) {
+            return new ApiResponse(false,
                     "Account already exists with this Email",
-                    null
-            );
+                    null);
         }
 
         String otp = generateOTP();
         String k = key(email);
 
-        log.debug("Generated OTP for {} -> {}", email, otp);
-
         otpStore.put(k, otp);
-        otpExpiryStore.put(k,
-                LocalDateTime.now().plusMinutes(10));
+        otpExpiryStore.put(k, LocalDateTime.now().plusMinutes(10));
 
-        log.info("OTP stored and expiry set for {}", email);
+        // send email with frontend template OR backend default
+        emailService.sendOtpEmail(email, otp, template);
 
-        emailService.sendOtpEmail(email, otp);
-
-        log.info("OTP email sent successfully to {}", email);
-
-        return new ApiResponse(
-                true,
-                "OTP sent successfully",
-                null
-        );
+        return new ApiResponse(true, "OTP sent successfully", null);
     }
 
     @Transactional
@@ -111,27 +98,29 @@ public class AuthService {
         otpStore.put(k, otp);
         otpExpiryStore.put(k, LocalDateTime.now().plusMinutes(10));
 
-        emailService.sendOtpEmail(request.getEmail(), otp);
+        emailService.sendOtpEmail(request.getEmail(), otp, null);
 
         return new ApiResponse(true,"OTP sent",null);
     }
 
-    @Transactional
     public ApiResponse requestLoginOtp(LoginRequest request) {
 
-            Company company = companyRepository
-                    .findByEmailAndIsActiveTrue(request.getEmail())
-                    .orElseThrow(() ->
-                            new RuntimeException("Company not found with this email"));
+        Company company = companyRepository
+                .findByEmailAndIsActiveTrue(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("Company not found with this email"));
 
-
-            String otp = generateOTP();
+        String otp = generateOTP();
 
         String k = key(request.getEmail());
         otpStore.put(k, otp);
         otpExpiryStore.put(k, LocalDateTime.now().plusMinutes(10));
 
-        emailService.sendOtpEmail(company.getEmail(), otp);
+        emailService.sendOtpEmail(
+                company.getEmail(),
+                otp,
+                request.getTemplate() // add template
+        );
 
         return new ApiResponse(true, "Login OTP sent successfully", null);
     }

@@ -17,11 +17,14 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/send-otp")
-    public ResponseEntity<ApiResponse> resendOtp(
-            @RequestParam String email
+    public ResponseEntity<ApiResponse> sendOtp(
+            @Valid @RequestBody SendOtpRequest request
     ) {
         return ResponseEntity.ok(
-                authService.sendOtp(email)
+                authService.sendOtp(
+                        request.getEmail(),
+                        request.getTemplate()
+                )
         );
     }
 

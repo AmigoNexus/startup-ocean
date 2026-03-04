@@ -303,9 +303,6 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
       )}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
-            {displayService?.type === 'SERVICE_PROVIDER' ? <Share2 className="h-6 w-6 text-teal-400" /> : <Briefcase className="h-6 w-6 text-teal-400" />}
-          </div>
           <div>
             <h3 className="text-xl font-bold text-gray-800">{company.companyName}</h3>
             {company.email && (

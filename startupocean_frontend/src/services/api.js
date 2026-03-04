@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { emailTemplates } from "../utils/emailTemplates";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8025';
 
@@ -37,8 +38,12 @@ export const authAPI = {
   register: (data) => api.post("/auth/register", data),
 
   requestLoginOtp: (email) =>
-    api.post("/auth/login/request-otp",
-      { email },
+    api.post(
+      "/auth/login/request-otp",
+      {
+        email,
+        template: emailTemplates.otp()
+      },
       { headers: { Authorization: undefined } }
     ),
 
@@ -53,11 +58,14 @@ export const authAPI = {
     }),
 
   sendOtp: (email) =>
-    api.post(`/auth/send-otp?email=${email}`, null, {
-      headers: { Authorization: undefined },
-    }),
+    api.post("/auth/send-otp",
+      {
+        email,
+        template: emailTemplates.otp()
+      },
+      { headers: { Authorization: undefined } }
+    ),
 };
-
 export const companyAPI = {
   create: (data) => api.post('/companies', data),
   update: (id, data) => api.put(`/companies/${id}`, data),

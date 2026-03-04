@@ -1,25 +1,51 @@
 export const emailTemplates = {
-    otp: (otp = '{{OTP}}') => ({
-        subject: "StartupOcean - Email Verification OTP",
-        body: `Your OTP for email verification is: ${otp}
 
-This OTP is valid for 10 minutes.
+  otp: (otp = "{{OTP}}") => `
+  <div style="font-family:Arial;background:#f5f5f5;padding:30px">
+    <div style="background:white;padding:20px;border-radius:10px">
+      <h2 style="color:#0d9488">StartupOcean</h2>
 
-If you didn't request this, please ignore this email.
+      <p>Your OTP for email verification:</p>
 
-Thanks,
-StartupOcean Team`
-    }),
+      <h1 style="
+        text-align:center;
+        letter-spacing:6px;
+        color:#0d9488;
+        border:2px dashed #0d9488;
+        padding:12px;
+      ">
+        ${otp}
+      </h1>
 
-    collaborationRequest: (senderCompanyName, message) => ({
-        subject: `New Collaboration Request from ${senderCompanyName}`,
-        body: `You have received a new collaboration request from ${senderCompanyName}.
+      <p>This OTP is valid for 10 minutes.</p>
+      <p>If you didn't request this, ignore this email.</p>
 
-Message: ${message}
+      <hr/>
+      <p style="font-size:12px;color:gray">
+        StartupOcean Team
+      </p>
+    </div>
+  </div>
+  `,
 
-Please login to StartupOcean to respond.
+  collaborationRequest: (companyName, message) => ({
+    subject: `New Collaboration Request from ${companyName}`,
+    body: `
+      <div style="font-family:Arial;padding:20px">
+        <h2 style="color:#0d9488">StartupOcean</h2>
 
-Thanks,
-StartupOcean Team`
-    })
+        <p>You received a collaboration request from:</p>
+
+        <h3 style="color:#0d9488">${companyName}</h3>
+
+        <div style="background:#f5f5f5;padding:15px;border-radius:8px">
+          <b>Message:</b>
+          <p>${message || "No message provided"}</p>
+        </div>
+
+        <p>Login to StartupOcean to respond.</p>
+      </div>
+    `,
+  }),
+
 };

@@ -44,8 +44,6 @@ const VerifyOTP = () => {
       navigate('/register', { replace: true });
       return;
     }
-    // Simulate OTP sending - in a real app, this might be called
-    // Show loading for 1-2 seconds, then show the OTP input
     const otpTimer = setTimeout(() => {
       startCountdown();
     }, 1500);
@@ -131,7 +129,7 @@ const VerifyOTP = () => {
     setError('');
 
     try {
-      const response = await authAPI.resendOtp(email);
+      const response = await authAPI.sendOtp(email);
 
       if (response.data?.success) {
         toast.success('OTP resent successfully!');
