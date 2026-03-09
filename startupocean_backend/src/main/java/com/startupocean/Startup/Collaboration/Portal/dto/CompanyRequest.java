@@ -26,4 +26,7 @@ public class CompanyRequest {
 
     private List<ServiceRequest> services;
 
+    private String welcomeTemplate;
+    private String startupTemplate;
+    private String providerTemplate;
 }

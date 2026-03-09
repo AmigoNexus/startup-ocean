@@ -52,6 +52,9 @@ public class Company {
     private LocalDateTime deletedAt;
 
 
+    @Column(name = "logo")
+    private byte[] logo;
+
     public void softDelete() {
         this.isActive = false;
         this.deletedAt = LocalDateTime.now();

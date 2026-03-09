@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { companyAPI } from '../services/api';
 import toast from 'react-hot-toast';
+const API_HOST = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8025';
 import CompanyDetails from '../components/CompanyDetails';
 
 const CompanyPage = () => {
@@ -27,7 +28,11 @@ const CompanyPage = () => {
   const [requireSequentialFill, setRequireSequentialFill] = useState(false);
   const [showCompanyTypeSelection, setShowCompanyTypeSelection] = useState(false);
   const [editingIndex, setEditingIndex] = useState(0);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const logoInputRef = useRef(null);
   const [phoneError, setPhoneError] = useState('');
+  const [logoTimestamp, setLogoTimestamp] = useState(Date.now());
 
   useEffect(() => {
     fetchCompany();
@@ -100,6 +105,34 @@ const CompanyPage = () => {
     }
   };
 
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!company?.companyId) {
+      toast.error('Company not found. Please save first.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setLogoUploading(true);
+    try {
+      await companyAPI.uploadLogo(company.companyId, formData);
+      toast.success('Logo updated successfully! 🎉');
+      setLogoTimestamp(Date.now());
+      setImgError(false);
+      await fetchCompany();
+    } catch (err) {
+      console.error(err);
+      toast.error('Logo upload failed. Please try again.');
+    } finally {
+      setLogoUploading(false);
+      e.target.value = '';
+    }
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -231,6 +264,47 @@ const CompanyPage = () => {
 
         <div className="w-full">
           <form onSubmit={handleSave} className="bg-white rounded-lg shadow-lg p-8 space-y-8">
+
+            {/* ── Logo Upload Section ── */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Company Logo</h3>
+              <div className="flex items-center gap-6">
+                {/* Preview */}
+                <div className="w-28 h-28 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50 shrink-0">
+                  {company?.logoUrl && !imgError ? (
+                    <img
+                      src={`${API_HOST}${company.logoUrl}?t=${logoTimestamp}`}
+                      alt="Company Logo"
+                      className="w-full h-full object-cover rounded-full"
+                      onError={() => setImgError(true)}
+                    />
+                  ) : (
+                    <span className="text-gray-400 text-xs text-center px-2">No Logo</span>
+                  )}
+                </div>
+
+                {/* Upload button */}
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={logoInputRef}
+                    className="hidden"
+                    onChange={handleLogoUpload}
+                    id="logo-upload-input"
+                  />
+                  <button
+                    type="button"
+                    disabled={logoUploading}
+                    onClick={() => logoInputRef.current?.click()}
+                    className="px-5 py-2.5 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition disabled:opacity-50"
+                  >
+                    {logoUploading ? 'Uploading...' : (company?.companyId && !imgError) ? 'Change Logo' : 'Upload Logo'}
+                  </button>
+                  <p className="text-xs text-gray-400 mt-2">PNG, JPG, WEBP up to 5MB</p>
+                </div>
+              </div>
+            </div>
             <div>
               <CompanyDetails
                 formData={formData}

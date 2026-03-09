@@ -15,6 +15,7 @@
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -26,6 +27,7 @@
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -42,9 +44,12 @@
 
 /* Typing indicator animation */
 @keyframes typing {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-5px);
   }
@@ -64,10 +69,13 @@
 
 /* Pulse animation for notifications */
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.05);
     opacity: 0.8;
@@ -172,6 +180,7 @@
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
@@ -188,6 +197,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -202,7 +212,7 @@
   .message-bubble {
     max-width: 85%;
   }
-  
+
   .chat-container {
     height: 100vh;
     border-radius: 0;
@@ -214,12 +224,12 @@
   .messages-container {
     background-color: #1f2937;
   }
-  
+
   .message-bubble-left {
     background-color: #374151;
     color: #f9fafb;
   }
-  
+
   .date-separator::before,
   .date-separator::after {
     background: #4b5563;

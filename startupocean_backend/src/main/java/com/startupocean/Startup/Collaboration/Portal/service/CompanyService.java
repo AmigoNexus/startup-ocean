@@ -4,12 +4,13 @@ import com.startupocean.Startup.Collaboration.Portal.dto.*;
 import com.startupocean.Startup.Collaboration.Portal.entity.*;
 import com.startupocean.Startup.Collaboration.Portal.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,6 +23,7 @@ public class CompanyService {
     private final ServiceRepository CompanyServiceRepository;
     private final OfferingRepository offeringRepository;
     private final SocialLinkRepository socialLinkRepository;
+    private final EmailService emailService;
     private final JwtService jwtService;
     @Transactional
     public ApiResponse createCompany(CompanyRequest request) {
@@ -40,6 +42,18 @@ public class CompanyService {
         company.setIsActive(true);
 
         Company savedCompany = companyRepository.save(company);
+
+        try {
+            if (request.getWelcomeTemplate() != null && !request.getWelcomeTemplate().isBlank()) {
+                emailService.sendEmail(
+                        savedCompany.getEmail(),
+                        "Welcome to StartupOcean 🌊",
+                        request.getWelcomeTemplate()
+                );
+            }
+        } catch (Exception e) {
+            log.error("Error sending welcome email", e);
+        }
 
         if (request.getServices() != null) {
             for (ServiceRequest s : request.getServices()) {
@@ -74,7 +88,6 @@ public class CompanyService {
                     }
                 }
             }
-
         }
 
         if (request.getSocialLinks() != null) {
@@ -89,6 +102,69 @@ public class CompanyService {
 
             socialLinkRepository.save(socialLink);
         }
+        // notify opposite companies
+        try {
+
+            List<ServiceEntity> services =
+                    CompanyServiceRepository.findByCompany(savedCompany);
+
+            if (!services.isEmpty()) {
+
+                Set<String> startupRecipients = new HashSet<>();
+                Set<String> providerRecipients = new HashSet<>();
+
+                for (ServiceEntity service : services) {
+
+                    if (service.getType() == Company.CompanyType.STARTUP) {
+
+                        List<Company> providers =
+                                companyRepository.findCompaniesByServiceType(
+                                        Company.CompanyType.SERVICE_PROVIDER
+                                );
+
+                        providers.forEach(c -> {
+                            if (!c.getEmail().equals(savedCompany.getEmail())) {
+                                providerRecipients.add(c.getEmail());
+                            }
+                        });
+                    }
+
+                    if (service.getType() == Company.CompanyType.SERVICE_PROVIDER) {
+
+                        List<Company> startups =
+                                companyRepository.findCompaniesByServiceType(
+                                        Company.CompanyType.STARTUP
+                                );
+
+                        startups.forEach(c -> {
+                            if (!c.getEmail().equals(savedCompany.getEmail())) {
+                                startupRecipients.add(c.getEmail());
+                            }
+                        });
+                    }
+                }
+
+                // Notification loop madhe - correct template use kara
+                for (String email : providerRecipients) {
+                    emailService.sendNewStartupNotification(
+                            email,
+                            savedCompany.getCompanyName(),
+                            request.getStartupTemplate()
+                    );
+                }
+
+                for (String email : startupRecipients) {
+                    emailService.sendNewServiceProviderNotification(
+                            email,
+                            savedCompany.getCompanyName(),
+                            request.getProviderTemplate()
+                    );
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Error sending company notification emails", e);
+        }
 
         return new ApiResponse(true, "Company created successfully", convertToResponse(savedCompany));
     }
@@ -98,6 +174,8 @@ public class CompanyService {
         Company company = companyRepository
                 .findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        byte[] existingLogo = company.getLogo();
 
         String email = SecurityContextHolder
                 .getContext()
@@ -110,6 +188,7 @@ public class CompanyService {
 
         company.setCompanyName(request.getCompanyName());
         company.setCity(request.getCity());
+        company.setLogo(existingLogo);
 
         Company updatedCompany = companyRepository.save(company);
 
@@ -240,6 +319,7 @@ public class CompanyService {
         response.setEmail(company.getEmail());
         response.setCity(company.getCity());
         response.setCreatedAt(company.getCreatedAt());
+        response.setLogoUrl("/upload/logo/" + company.getCompanyId());
 
         List<ServiceEntity> serviceEntities =
                 CompanyServiceRepository.findByCompany(company);

@@ -38,4 +38,13 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
         List<Company> searchByOffering(@Param("offering") String offering);
 
     Optional<Company> findByCompanyIdAndIsActiveTrue(Long companyId);
+
+    @Query("""
+    SELECT DISTINCT c
+    FROM Company c
+    JOIN c.services s
+    WHERE s.type = :type
+    AND c.isActive = true
+    """)
+    List<Company> findCompaniesByServiceType(@Param("type") Company.CompanyType type);
 }

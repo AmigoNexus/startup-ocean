@@ -187,6 +187,7 @@ const MessagesPage = () => {
 };
 
 const ConversationItem = ({ collaboration, onClick, lastMessage, unreadCount, formatTime }) => {
+    const [imgError, setImgError] = useState(false);
     const company = collaboration.type === 'sent'
         ? collaboration.targetCompany
         : collaboration.requesterCompany;
@@ -198,8 +199,17 @@ const ConversationItem = ({ collaboration, onClick, lastMessage, unreadCount, fo
         >
             <div className="flex items-center gap-4">
                 <div className="relative flex-shrink-0">
-                    <div className="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md">
-                        {company?.companyName?.charAt(0)?.toUpperCase() || '?'}
+                    <div className="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md overflow-hidden">
+                        {company?.companyId && !imgError ? (
+                            <img
+                                src={`${API_BASE_URL}/upload/logo/${company.companyId}`}
+                                alt="Logo"
+                                className="w-full h-full object-cover"
+                                onError={() => setImgError(true)}
+                            />
+                        ) : (
+                            <span>{company?.companyName?.charAt(0)?.toUpperCase() || '?'}</span>
+                        )}
                     </div>
                     {unreadCount > 0 && (
                         <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
@@ -221,7 +231,6 @@ const ConversationItem = ({ collaboration, onClick, lastMessage, unreadCount, fo
 
                     <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm text-gray-500 mb-1">{company?.companyType || 'N/A'}</p>
                             {lastMessage ? (
                                 <p className={`text-sm truncate ${unreadCount > 0 ? 'font-semibold text-gray-800' : 'text-gray-600'}`}>
                                     {lastMessage.senderCompanyId === (collaboration.type === 'sent' ? collaboration.requesterCompany.companyId : collaboration.targetCompany.companyId)

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Mail, Phone, Briefcase, Building2, Edit2, Save, X, Shield, MapPin } from 'lucide-react';
+import { User, Mail, Phone, Briefcase, Building2, Edit2, Save, X, Shield, MapPin, Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { companyAPI } from '../services/api';
 import toast from 'react-hot-toast';
+
+const API_HOST = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8025';
 
 const ProfilePage = () => {
   const { user: authUser, setUser: setAuthUser } = useAuth();
@@ -12,6 +14,7 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ name: '', phoneNumber: '' });
   const [loading, setLoading] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const activeService = user?.company?.services?.[0];
 
   useEffect(() => {
@@ -30,6 +33,7 @@ const ProfilePage = () => {
       const res = await companyAPI.getMyCompany();
       if (res.data?.success && res.data?.data) {
         const companyData = res.data.data;
+        setImgError(false);
         setUser((prev) => ({
           ...prev,
           company: companyData,
@@ -128,11 +132,28 @@ const ProfilePage = () => {
 
               <div className="relative px-6 pb-6">
                 <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-                  <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-white">
-                    <div className="w-28 h-28 bg-gradient-to-br from-teal-400 to-blue-500 rounded-full flex items-center justify-center">
-                      <User className="h-14 w-14 text-white" />
-                    </div>
+                  <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-white overflow-hidden">
+                    {user?.company?.companyId && !imgError ? (
+                      <img
+                        src={`${API_HOST}/upload/logo/${user.company.companyId}?t=${Date.now()}`}
+                        alt="Company Logo"
+                        className="w-full h-full object-cover rounded-full"
+                        onError={() => setImgError(true)}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-teal-400 to-blue-500 rounded-full flex items-center justify-center">
+                        <User className="h-14 w-14 text-white" />
+                      </div>
+                    )}
                   </div>
+                  {/* Camera icon overlay */}
+                  <Link
+                    to="/company"
+                    title="Change Logo"
+                    className="absolute bottom-1 right-1 bg-white rounded-full p-1.5 shadow-md border border-gray-200 hover:bg-teal-50 transition"
+                  >
+                    <Camera className="h-4 w-4 text-teal-600" />
+                  </Link>
                 </div>
 
                 <div className="pt-20 text-center">
@@ -207,6 +228,30 @@ const ProfilePage = () => {
 
               <Label label="City">
                 <Value icon={<MapPin className="h-5 w-5 text-orange-500" />} value={user.company?.city || 'Not provided'} />
+              </Label>
+
+              <Label label="Company Logo">
+                <div className="flex items-center gap-4 bg-gray-50 px-4 py-3 rounded-lg">
+                  <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-teal-200 shadow bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center">
+                    {user?.company?.companyId && !imgError ? (
+                      <img
+                        src={`${API_HOST}${user.company.logoUrl}`}
+                        alt="Company Logo"
+                        className="w-full h-full object-cover"
+                        onError={() => setImgError(true)}
+                      />
+                    ) : (
+                      <Building2 className="h-7 w-7 text-white" />
+                    )}
+                  </div>
+                  <Link
+                    to="/company"
+                    className="text-sm text-teal-600 hover:text-teal-800 font-medium flex items-center gap-1 hover:underline"
+                  >
+                    <Camera className="h-4 w-4" />
+                    {user?.company?.companyId && !imgError ? 'Change Logo' : 'Upload Logo'}
+                  </Link>
+                </div>
               </Label>
 
             </div>

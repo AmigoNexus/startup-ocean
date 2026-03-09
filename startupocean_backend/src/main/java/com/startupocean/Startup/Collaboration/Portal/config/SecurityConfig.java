@@ -98,6 +98,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
                         .requestMatchers("/events/**").authenticated()
                         .requestMatchers("/api/events/**").authenticated()
+                        .requestMatchers("/auth/**", "/upload/**", "/uploads/**").permitAll()
+                        .requestMatchers("/auth/**",
+                                "/upload/**",
+                                "/uploads/**",
+                                "/companies/public/**").permitAll()
 
                         .anyRequest().authenticated()
                 )

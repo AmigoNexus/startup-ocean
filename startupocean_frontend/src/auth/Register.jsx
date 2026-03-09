@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import BasicInformation from '../components/BasicInformation';
 import CompanyDetails from '../components/CompanyDetails';
 import SocialNetworking from '../components/SocialNetworking';
+import { emailTemplates } from '../utils/emailTemplates';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -252,6 +253,11 @@ const Register = () => {
         phoneNumber: formData.companyDetails[0]?.phoneNumber || formData.phoneNumber,
         isPhoneHidden: formData.companyDetails[0]?.isPhoneHidden ?? formData.isPhoneHidden,
         city: formData.city,
+
+        // template: emailTemplates.newWelcomeEmail(),
+        welcomeTemplate: emailTemplates.newWelcomeEmail(formData.companyName),
+        startupTemplate: emailTemplates.newStartupJoined(formData.companyName),
+        providerTemplate: emailTemplates.newServiceProviderJoined(formData.companyName),
 
         services: formData.companyDetails.map(detail => ({
           type: detail.type,

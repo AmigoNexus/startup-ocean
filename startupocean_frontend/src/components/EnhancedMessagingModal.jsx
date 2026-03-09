@@ -27,6 +27,8 @@ const EnhancedMessagingModal = ({ collaboration, type, onClose }) => {
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
+    const [imgErrorHeader, setImgErrorHeader] = useState(false);
+    const [imgErrorSender, setImgErrorSender] = useState(false);
     const messagesEndRef = useRef(null);
     const messageContainerRef = useRef(null);
     const typingTimeoutRef = useRef(null);
@@ -180,7 +182,7 @@ const EnhancedMessagingModal = ({ collaboration, type, onClose }) => {
     };
     const handleKeyPress = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
+            e.preventDefault()
             handleSendMessage(e);
         }
     };
@@ -191,13 +193,21 @@ const EnhancedMessagingModal = ({ collaboration, type, onClose }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-0 md:p-4 z-50">
             <div className="bg-white w-full h-full md:max-w-4xl md:h-[90vh] md:rounded-lg flex flex-col shadow-2xl">
                 <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white p-4 md:rounded-t-lg flex items-center justify-between shadow-lg">
-                    <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-teal-600 font-bold text-sm">
-                            {company?.companyName?.charAt(0) || '?'}
+                    <div className="flex items-center gap-3 flex-1 px-1">
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-teal-600 font-bold overflow-hidden border-2 border-white/20 shrink-0">
+                            {company?.companyId && !imgErrorHeader ? (
+                                <img
+                                    src={`${API_BASE_URL}/upload/logo/${company.companyId}`}
+                                    alt="Logo"
+                                    className="w-full h-full object-cover"
+                                    onError={() => setImgErrorHeader(true)}
+                                />
+                            ) : (
+                                <span>{company?.companyName?.charAt(0) || '?'}</span>
+                            )}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h2 className="text-sm font-semibold truncate">{company?.companyName}</h2>
-                            <p className="text-xs text-teal-100 truncate">{company?.companyType}</p>
+                            <h2 className="text-sm font-semibold truncate leading-tight">{company?.companyName}</h2>
                         </div>
                     </div>
 
@@ -253,10 +263,19 @@ const EnhancedMessagingModal = ({ collaboration, type, onClose }) => {
                                                     className={`flex items-end gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}
                                                 >
                                                     {!isMe && (
-                                                        <div className={`w-8 h-8 flex-shrink-0 ${showAvatar ? 'opacity-100' : 'opacity-0'}`}>
-                                                            <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
-                                                                {msg.senderCompanyName?.charAt(0) || '?'}
-                                                            </div>
+                                                        <div className={`w-8 h-8 flex-shrink-0 overflow-hidden rounded-full ${showAvatar ? 'opacity-100' : 'opacity-0'}`}>
+                                                            {msg.senderCompanyId && !imgErrorSender ? (
+                                                                <img
+                                                                    src={`${API_BASE_URL}/upload/logo/${msg.senderCompanyId}`}
+                                                                    alt="S"
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={() => setImgErrorSender(true)}
+                                                                />
+                                                            ) : (
+                                                                <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                                                                    {msg.senderCompanyName?.charAt(0) || '?'}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     )}
                                                     <div className={`max-w-[75%] md:max-w-[60%] ${isMe ? 'items-end' : 'items-start'} flex flex-col`}>
@@ -304,7 +323,7 @@ const EnhancedMessagingModal = ({ collaboration, type, onClose }) => {
                         </div>
                     )}
                 </div>
-                {isTyping && (
+                {/* {isTyping && (
                     <div className="px-4 py-2 bg-gray-100">
                         <div className="flex items-center gap-2">
                             <div className="flex gap-1">
@@ -315,7 +334,7 @@ const EnhancedMessagingModal = ({ collaboration, type, onClose }) => {
                             <span className="text-xs text-gray-500">typing...</span>
                         </div>
                     </div>
-                )}
+                )} */}
                 <form onSubmit={handleSendMessage} className="bg-white border-t border-gray-200 p-4 md:rounded-b-lg">
                     <div className="flex items-end gap-2">
                         <div className="flex-1 relative">

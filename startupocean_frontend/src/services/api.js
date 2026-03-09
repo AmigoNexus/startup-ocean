@@ -75,6 +75,10 @@ export const companyAPI = {
   search: (keyword) => api.get('/companies/search', { params: { keyword } }),
   searchByOffering: (offering) => api.get('/companies/search/offering', { params: { offering } }),
   delete: (id) => api.delete(`/companies/${id}`),
+  uploadLogo: (companyId, formData) =>
+    api.post(`/upload/logo/${companyId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 };
 
 export const eventAPI = {

@@ -216,7 +216,7 @@ const CollaborationsPage = () => {
                   <option value="">Choose a company...</option>
                   {companies.map((company) => (
                     <option key={company.companyId} value={company.companyId}>
-                      {company.companyName} - {company.companyType}
+                      {company.companyName}
                     </option>
                   ))}
                 </select>
@@ -344,7 +344,7 @@ const CollaborationCard = ({ collaboration, type, onAccept, onReject, onViewDeta
           </div>
           <div>
             <h3 className="text-lg sm:text-xl font-bold text-gray-800 leading-tight">{company?.companyName || 'Unknown Company'}</h3>
-            <p className="text-xs sm:text-sm text-gray-500 font-medium">{company?.companyType || 'N/A'}</p>
+            {/* <p className="text-xs sm:text-sm text-gray-500 font-medium">{company?.companyType || 'N/A'}</p> */}
           </div>
         </div>
         <span className={`self-start px-3 py-1 rounded-full text-xs font-bold border ${statusColors[collaboration.status]}`}>
@@ -435,7 +435,7 @@ const CollaborationDetailsModal = ({ collaboration, type, onClose, onAccept, onR
             </div>
             <div>
               <h3 className="text-2xl font-bold text-gray-800">{company?.companyName || 'Unknown'}</h3>
-              <p className="text-gray-600">{company?.companyType || 'N/A'}</p>
+              {/* <p className="text-gray-600">{company?.companyType || 'N/A'}</p> */}
             </div>
           </div>
 
