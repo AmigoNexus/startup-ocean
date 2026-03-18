@@ -99,7 +99,7 @@ export default function StartupTrendingNewsMini() {
   const item = items[current];
 
   return (
-    <div className="container mx-auto px-4  ">
+    <div className="container mx-auto px-4 pt-32">
       <div
         onClick={() => handleClick(item)}
         className="bg-white rounded-xl shadow-md border p-5 cursor-pointer hover:shadow-lg transition h-64 flex flex-col "

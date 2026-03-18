@@ -131,7 +131,7 @@ const CollaborationsPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 overflow-x-hidden">
+    <div className="container mx-auto px-4 py-8 pt-24 overflow-x-hidden">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Collaborations</h1>
         <button

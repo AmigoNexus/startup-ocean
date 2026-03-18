@@ -115,7 +115,7 @@ export default function StartupTrendingNews() {
     });
 
     return (
-        <section className="py-12 bg-gradient-to-b from-gray-50 to-white">
+        <section className="py-12 pt-20">
             <div className="container px-4 mx-auto mb-8  ">
                 <div className="flex flex-col items-center mb-16 text-center">
                     <div className="flex items-center gap-2 px-4 py-2 mb-4 text-sm font-semibold text-teal-600 bg-teal-100 rounded-full">

@@ -78,7 +78,7 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 pt-24">
       {/* Welcome Banner */}
       {isAuthenticated && (
         <div className="bg-gradient-to-br from-teal-400 to-teal-500 text-white p-6 mb-10 rounded-3xl shadow-xl relative overflow-hidden">

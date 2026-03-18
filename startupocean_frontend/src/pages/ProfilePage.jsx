@@ -117,7 +117,7 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 py-8 pt-24">
       <div className="container mx-auto px-4 max-w-5xl">
 
         <div className="mb-8">
