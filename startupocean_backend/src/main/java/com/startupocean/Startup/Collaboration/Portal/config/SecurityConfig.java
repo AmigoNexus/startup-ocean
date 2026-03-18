@@ -93,6 +93,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/cities/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/cities/**").authenticated()
 
+                        .requestMatchers("/enquiries/submit").permitAll()
+                        .requestMatchers("/enquiries/**").permitAll()
+
                         // Events
                         .requestMatchers(HttpMethod.GET, "/events/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()

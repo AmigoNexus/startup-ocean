@@ -398,6 +398,11 @@ const Register = () => {
                   setPhoneError={setPhoneError}
                   handleSendOtp={handleSendOtp}
                   handleVerifyOtp={handleVerifyOtp}
+                  handleChangeEmail={() => {
+                    setIsOtpSent(false);
+                    setOtp('');
+                    setResendTimer(0);
+                  }}
                 />
                 <div className="pt-6">
                   <button

@@ -16,6 +16,7 @@ const BasicInformation = ({
   setPhoneError,
   handleSendOtp,
   handleVerifyOtp,
+  handleChangeEmail,
 }) => {
   const [cities, setCities] = useState([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
@@ -99,9 +100,7 @@ const BasicInformation = ({
               <p className="text-xs font-semibold text-teal-700">Enter verification code</p>
               <button
                 type="button"
-                onClick={() => {
-                  setOtp('');
-                }}
+                onClick={handleChangeEmail}
                 className="text-xs text-gray-500 hover:underline"
               >
                 Change Email

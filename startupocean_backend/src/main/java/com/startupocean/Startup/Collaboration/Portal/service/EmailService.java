@@ -213,6 +213,56 @@ public class EmailService {
     }
 
     @Async
+    public void sendEnquiryEmail(String to, String name, String email, String phone, String message) {
+
+        String html = buildEnquiryHtml(
+                name,
+                email,
+                phone == null ? "N/A" : phone,
+                message
+        );
+
+        sendEmail(to, "New Enquiry Received", html);
+    }
+
+    String buildEnquiryHtml(String name, String email, String phone, String message) {
+        return """
+    <div style="font-family:Arial;background:#f4f7f9;padding:30px">
+      <div style="max-width:600px;margin:auto;background:white;border-radius:10px;padding:30px">
+
+        <h2 style="color:#0d9488">StartupOcean 🌊</h2>
+
+        <h3 style="margin-top:10px">📩 New Enquiry Received</h3>
+
+        <hr/>
+
+        <p><b>Name:</b> %s</p>
+        <p><b>Email:</b> %s</p>
+        <p><b>Phone:</b> %s</p>
+
+        <div style="margin-top:20px;padding:15px;background:#f0fdfa;border-left:4px solid #0d9488">
+          <p style="margin:0"><b>Message:</b></p>
+          <p style="margin-top:10px">%s</p>
+        </div>
+
+        <div style="margin-top:25px;text-align:center">
+          <a href="https://startupocean.in"
+             style="background:#0d9488;color:white;padding:12px 20px;
+             border-radius:6px;text-decoration:none">
+             View Dashboard
+          </a>
+        </div>
+
+        <p style="font-size:12px;color:#888;margin-top:30px">
+          © StartupOcean
+        </p>
+
+      </div>
+    </div>
+    """.formatted(name, email, phone, message);
+    }
+
+    @Async
     public void sendEmail(String to, String subject, String body) {
 
         try {

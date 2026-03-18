@@ -18,6 +18,7 @@ public class EnquiryService {
 
     private final EnquiryRepository enquiryRepository;
 
+    private final EmailService emailService;
     @Transactional
     public ApiResponse submitEnquiry(EnquiryRequest request) {
         Enquiry enquiry = new Enquiry();
@@ -29,6 +30,14 @@ public class EnquiryService {
         enquiry.setIsActive(true);
 
         Enquiry savedEnquiry = enquiryRepository.save(enquiry);
+
+        emailService.sendEnquiryEmail(
+                "ajit.undare@amigonexus.com",
+                request.getName(),
+                request.getEmail(),
+                request.getPhone(),
+                request.getMessage()
+        );
 
         return new ApiResponse(true, "Enquiry submitted successfully", convertToResponse(savedEnquiry));
     }
