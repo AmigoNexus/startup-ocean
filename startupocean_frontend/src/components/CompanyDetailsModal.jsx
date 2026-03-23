@@ -1,4 +1,4 @@
-import { X, MapPin, Mail, Phone, Lock, Globe, Linkedin, Facebook, Instagram, Twitter, UserPlus } from 'lucide-react';
+import { X, MapPin, Mail, Phone, Lock, Globe, Linkedin, Facebook, Instagram, Twitter, UserPlus, Info, Briefcase, ExternalLink } from 'lucide-react';
 
 const maskPhoneNumber = (phoneNumber) => {
     if (!phoneNumber) return 'Not provided';
@@ -9,156 +9,171 @@ const CompanyDetailsModal = ({ company, onClose, onConnect, isAuthenticated, nav
     const hasSocialLinks = company.socialLinks && Object.values(company.socialLinks).some(v => !!v);
 
     const socialIconMap = {
-        website: <Globe className="h-5 w-5 text-teal-400" />,
-        linkedin: <Linkedin className="h-5 w-5 text-teal-400" />,
-        facebook: <Facebook className="h-5 w-5 text-teal-400" />,
-        instagram: <Instagram className="h-5 w-5 text-teal-400" />,
-        twitter: <Twitter className="h-5 w-5 text-teal-400" />,
+        website: <Globe className="h-5 w-5 text-teal-500" />,
+        linkedin: <Linkedin className="h-5 w-5 text-teal-600" />,
+        facebook: <Facebook className="h-5 w-5 text-sky-600" />,
+        instagram: <Instagram className="h-5 w-5 text-pink-600" />,
+        twitter: <Twitter className="h-5 w-5 text-slate-900" />,
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-200">
-                <div className="sticky top-0 bg-white border-b border-gray-100 p-6 flex justify-between items-center z-10">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900">{company.companyName}</h2>
-                        {company.city && (
-                            <p className="text-xs font-bold text-gray-500 flex items-center gap-1 mt-1 tracking-wider">
-                                <MapPin className="h-3 w-3 text-teal-200" /> {company.city}
-                            </p>
-                        )}
-                        {company.email && (
-                            <p className="text-xs font-medium text-teal-600 flex items-center gap-1 mt-1 lowercase">
-                                <Mail className="h-3 w-3 text-teal-500" /> {company.email}
-                            </p>
-                        )}
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-300">
+            <div className="bg-white rounded-[2.5rem] max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl shadow-teal-900/20 border border-slate-100 flex flex-col animate-in zoom-in-95 duration-300">
+                {/* Fixed Header */}
+                <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 p-8 flex justify-between items-center z-10">
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="bg-teal-50 text-teal-600 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-teal-100">
+                                Profile Overview
+                            </span>
+                        </div>
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight truncate pr-4">
+                            {company.companyName}
+                        </h2>
+                        <div className="flex flex-wrap items-center gap-4 mt-2">
+                            {company.city && (
+                                <div className="text-xs font-bold text-slate-500 flex items-center gap-1.5 uppercase tracking-wide">
+                                    <MapPin className="h-3.5 w-3.5 text-teal-500" /> {company.city}
+                                </div>
+                            )}
+                            {company.email && (
+                                <div className="text-xs font-bold text-slate-500 flex items-center gap-1.5 lowercase">
+                                    <Mail className="h-3.5 w-3.5 text-teal-500" /> {company.email}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
-                        <X className="h-6 w-6 text-gray-400" />
+                    <button 
+                        onClick={onClose} 
+                        className="p-3 bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-2xl transition-all duration-200"
+                    >
+                        <X className="h-6 w-6" />
                     </button>
                 </div>
 
-                <div className="p-8 space-y-8">
-                    <div className="space-y-6">
-                        {company.services?.map((service, sIdx) => (
-                            <div key={sIdx} className="bg-gray-50 border border-gray-200 rounded-xl p-6 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 bg-teal-400 text-white px-3 py-1 text-[10px] font-bold rounded-bl-lg">
-                                    {service.type.replace('_', ' ')}
-                                </div>
+                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                    <div className="space-y-10">
+                        {/* Services Section */}
+                        <div className="space-y-6">
+                             <div className="flex items-center gap-2 mb-2">
+                                <Briefcase className="h-4 w-4 text-teal-500" />
+                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Businesses & Expertise</h3>
+                            </div>
+                            
+                            {company.services?.map((service, sIdx) => (
+                                <div key={sIdx} className="bg-slate-50/50 border border-slate-100 rounded-[2rem] p-8 relative overflow-hidden group hover:border-teal-100 hover:bg-white transition-all duration-300">
+                                    <div className="absolute top-0 right-0 bg-teal-600 text-white px-5 py-2 text-[10px] font-black uppercase tracking-[0.15em] rounded-bl-[1.5rem] shadow-sm">
+                                        {service.type.replace('_', ' ')}
+                                    </div>
 
-                                <div className="space-y-4">
-                                    {service.description && (
-                                        <div>
-                                            <h4 className="text-xs font-bold text-gray-400 mb-1">Description</h4>
-                                            <p className="text-gray-700 leading-relaxed text-sm italic">"{service.description}"</p>
-                                        </div>
-                                    )}
-
-                                    {service.offerings && service.offerings.length > 0 && (
-                                        <div>
-                                            <h4 className="text-xs font-bold text-gray-400 mb-2">Offerings & Expertise</h4>
-                                            <div className="flex flex-wrap gap-2">
-                                                {service.offerings.map((o, oIdx) => (
-                                                    <span key={oIdx} className="bg-white border border-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
-                                                        {o}
-                                                    </span>
-                                                ))}
+                                    <div className="space-y-6">
+                                        {service.description && (
+                                            <div>
+                                                <p className="text-slate-600 leading-relaxed font-medium italic text-lg">
+                                                    "{service.description}"
+                                                </p>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    <div className="pt-4 border-t border-gray-200">
-                                        <h4 className="text-xs font-bold text-gray-400 mb-2">Contact Details</h4>
-                                        <div className="space-y-2">
-                                            {isAuthenticated ? (
-                                                <div className="space-y-3">
-                                                    {service.phoneNumber && (
-                                                        <div className="flex items-center gap-3 text-gray-700">
-                                                            <Phone className="h-5 w-5 text-teal-400" />
-                                                            <span className="text-sm font-bold text-gray-800 tracking-wide">
-                                                                {!service.isPhoneHidden ? service.phoneNumber : maskPhoneNumber(service.phoneNumber)}
-                                                            </span>
-                                                            {service.isPhoneHidden && <Lock className="h-3 w-3 text-gray-300" />}
-                                                        </div>
-                                                    )}
+                                        {service.offerings && service.offerings.length > 0 && (
+                                            <div className="pt-4">
+                                                <div className="flex flex-wrap gap-2">
+                                                    {service.offerings.map((o, oIdx) => (
+                                                        <span key={oIdx} className="bg-white border border-slate-200 group-hover:border-teal-100 text-slate-600 group-hover:text-teal-700 px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors">
+                                                            {o}
+                                                        </span>
+                                                    ))}
                                                 </div>
-                                            ) : (
-                                                <div className="flex items-center gap-2 text-xs text-gray-400 italic">
-                                                    <Lock className="h-3 w-3 text-gray-300" />
-                                                    <span>Login to view specific contacts</span>
-                                                </div>
-                                            )}
+                                            </div>
+                                        )}
+
+                                        <div className="pt-6 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                            <div>
+                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Direct Communication</h4>
+                                                {isAuthenticated ? (
+                                                    <div className="flex items-center gap-4">
+                                                        {service.phoneNumber && (
+                                                            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
+                                                                <Phone className="h-4 w-4 text-teal-500" />
+                                                                <span className="text-sm font-black text-slate-800 tracking-wider">
+                                                                    {!service.isPhoneHidden ? service.phoneNumber : maskPhoneNumber(service.phoneNumber)}
+                                                                </span>
+                                                                {service.isPhoneHidden && (
+                                                                    <div className="group/lock relative">
+                                                                        <Lock className="h-3.5 w-3.5 text-slate-300" />
+                                                                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover/lock:block bg-slate-900 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap">Protected</div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2.5 text-sm text-slate-400 font-medium italic">
+                                                        <Lock className="h-4 w-4 text-slate-200" />
+                                                        <span>Access restricted. Please login.</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            ))}
+                        </div>
+
+                        {/* Social Presence Section */}
+                        {company.socialLinks && Object.values(company.socialLinks).some(v => v) && (
+                            <div className="pt-2">
+                                <div className="flex items-center gap-2 mb-6">
+                                    <Globe className="h-4 w-4 text-teal-500" />
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Social Presence</h3>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {Object.entries(company.socialLinks).map(([key, value]) => {
+                                        if (!value) return null;
+                                        const url = value.startsWith('http') ? value : `https://${value}`;
+
+                                        return (
+                                            <a
+                                                key={key}
+                                                href={url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 hover:border-teal-200 hover:bg-teal-50/20 transition-all group"
+                                            >
+                                                <div className="w-12 h-12 bg-slate-50 group-hover:bg-white rounded-xl flex items-center justify-center transition-colors shadow-sm">
+                                                    {socialIconMap[key]}
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">
+                                                        {key === 'website' ? 'Official Site' : key}
+                                                    </span>
+                                                    <span className="text-sm font-bold text-slate-700 group-hover:text-teal-600 truncate flex items-center gap-1.5">
+                                                        {value.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                                                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    </span>
+                                                </div>
+                                            </a>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        ))}
+                        )}
                     </div>
-
-                    {!isAuthenticated && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <Lock className="h-5 w-5 text-yellow-600" />
-                                <p className="text-xs text-yellow-700">Detailed contact information is restricted to logged-in users only.</p>
-                            </div>
-                            <button
-                                onClick={() => { onClose(); navigate('/login'); }}
-                                className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg text-xs font-bold hover:bg-yellow-200 transition whitespace-nowrap"
-                            >
-                                Login Now
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Social Links Section */}
-                    {company.socialLinks && Object.values(company.socialLinks).some(v => v) && (
-                        <div className="pt-6 border-t border-gray-100">
-                            <h3 className="text-sm font-bold text-gray-400 tracking-widest mb-4">Connect with Us</h3>
-                            <div className="flex flex-wrap gap-4">
-                                {Object.entries(company.socialLinks).map(([key, value]) => {
-                                    if (!value) return null;
-
-                                    // Ensure URL has protocol
-                                    const url = value.startsWith('http') ? value : `https://${value}`;
-
-                                    return (
-                                        <div key={key} className="flex items-center gap-4 group bg-gray-50/50 p-3 rounded-xl border border-transparent hover:border-teal-100 hover:bg-teal-50/30 transition-all">
-                                            <div className="w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                                {socialIconMap[key]}
-                                            </div>
-                                            <div className="flex flex-col min-w-0">
-                                                <span className="text-[10px] font-black text-gray-400 tracking-wider mb-0.5">
-                                                    {key === 'website' ? 'Official Website' : key}
-                                                </span>
-                                                <a
-                                                    href={url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-sm font-bold text-teal-600 hover:text-teal-700 break-all leading-tight"
-                                                >
-                                                    {value.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                                                </a>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
                 </div>
 
-                <div className="p-6 bg-gray-50 flex gap-4 border-t border-gray-100">
+                {/* Footer Actions */}
+                <div className="p-8 bg-slate-50 flex flex-col sm:flex-row gap-4 border-t border-slate-100">
                     <button
                         onClick={() => onConnect(company)}
-                        className="flex-1 bg-teal-500 text-white py-3 rounded-xl hover:bg-teal-700 transition font-bold shadow-lg shadow-teal-100 flex items-center justify-center gap-2"
+                        className="flex-1 bg-slate-900 text-white py-4 rounded-2xl hover:bg-teal-600 transition-all duration-300 font-bold shadow-xl flex items-center justify-center gap-2 text-sm shadow-teal-500/10 active:scale-[0.98]"
                     >
-                        <UserPlus className="h-5 w-5" /> Send Connection
+                        <UserPlus className="h-5 w-5" /> Send Connection Request
                     </button>
                     <button
                         onClick={onClose}
-                        className="px-8 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-bold"
+                        className="px-10 py-4 bg-white border-2 border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 transition-all duration-300 font-bold text-sm"
                     >
-                        Close
+                        Dismiss
                     </button>
                 </div>
             </div>

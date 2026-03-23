@@ -1,4 +1,4 @@
-import { Mail, MapPin, Eye, UserPlus } from 'lucide-react';
+import { Mail, MapPin, Eye, UserPlus, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navigate, activeFilter }) => {
@@ -11,80 +11,96 @@ const CompanyCard = ({ company, onViewDetails, onConnect, isAuthenticated, navig
         onViewDetails(company);
     };
 
+    const isStartup = company.services?.some(s => s.type === 'STARTUP');
+
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden group relative">
+        <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-teal-500/10 hover:-translate-y-1 transition-all duration-500 flex flex-col overflow-hidden group relative h-full">
+            {/* Location Tag */}
             {company.city && (
-                <div className="absolute top-0 right-0 bg-sky-100 text-gray-900 px-3 py-1 rounded-bl-xl flex items-center gap-1 z-10">
-                    <MapPin className="h-3 w-3" />
-                    <span className="text-[10px] font-bold tracking-wide">{company.city}</span>
+                <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-md border border-gray-100 text-gray-700 px-3 py-1.5 rounded-full flex items-center gap-1.5 z-10 shadow-sm transition-transform group-hover:scale-105">
+                    <MapPin className="h-3 w-3 text-teal-500" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">{company.city}</span>
                 </div>
             )}
 
-            <div className="p-6 flex flex-col flex-1">
-                <div className="flex items-start gap-4 mb-4 pr-20">
-                    <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold text-gray-900 leading-tight">{company.companyName}</h3>
-                        {company.email && (
-                            <a
-                                href={`mailto:${company.email}`}
-                                className="text-sm text-gray-800 flex items-center gap-1 mt-1 hover:text-teal-600 transition"
+            <div className="p-8 flex flex-col flex-1">
+                {/* Header Section */}
+                <div className="mb-6">
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        {company.services?.map((s, idx) => (
+                            <span
+                                key={idx}
+                                className={`text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-widest
+                    ${s.type === 'STARTUP'
+                                        ? 'bg-amber-50 text-amber-600 border-amber-100'
+                                        : 'bg-teal-50 text-teal-600 border-teal-100'
+                                    }`}
                             >
-                                <Mail className="h-3.5 w-3.5 text-teal-400 flex-shrink-0" />
-                                <span className="truncate">{company.email}</span>
-                            </a>
-                        )}
+                                {s.type === 'STARTUP' ? 'Startup' : 'Service Provider'}
+                            </span>
+                        ))}
                     </div>
-                </div>
 
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                    {company.services?.map((s, idx) => (
-                        <span
-                            key={idx}
-                            className={`text-xs font-bold px-2.5 py-1 rounded-full border tracking-wide
-                ${s.type === 'STARTUP'
-                                    ? 'bg-violet-50 text-violet-600 border-violet-200'
-                                    : 'bg-sky-50 text-sky-600 border-sky-200'
-                                }`}
+                    <h3 className="text-xl font-black text-slate-900 leading-tight mb-2 group-hover:text-teal-600 transition-colors">
+                        {company.companyName}
+                    </h3>
+
+                    {company.email && (
+                        <a
+                            href={`mailto:${company.email}`}
+                            className="text-sm text-gray-500 flex items-center gap-1.5 hover:text-teal-600 transition-colors w-fit"
                         >
-                            {s.type === 'STARTUP' ? ' Startup' : ' Service Provider'}
-                        </span>
-                    ))}
+                            <Mail className="h-3.5 w-3.5 opacity-60" />
+                            <span className="truncate max-w-[180px] font-medium">{company.email}</span>
+                        </a>
+                    )}
                 </div>
 
-                <div className="border-t border-gray-100 mb-4" />
+                {/* Divider with Accent */}
+                <div className="relative h-px w-full bg-slate-100 mb-6">
+                    <div className="absolute top-0 left-0 h-px w-0 bg-teal-500 group-hover:w-1/2 transition-all duration-700"></div>
+                </div>
 
-                {company.offerings && company.offerings.length > 0 ? (
-                    <div className="mb-5 flex-1">
-                        <p className="text-xs font-black text-gray-700 mb-2">Offerings / Specialization:</p>
-                        <div className="flex flex-wrap gap-1.5">
-                            {company.offerings.slice(0, 4).map((offering, idx) => (
-                                <span
-                                    key={idx}
-                                    className="bg-gray-50 text-gray-600 border border-gray-200 px-2.5 py-1 rounded-md text-xs font-medium"
-                                >
-                                    {offering}
-                                </span>
-                            ))}
-                            {company.offerings.length > 4 && (
-                                <span className="text-xs text-gray-400 self-center font-medium">+{company.offerings.length - 4} more</span>
-                            )}
+                {/* Offerings Section */}
+                <div className="flex-1 mb-8">
+                    {company.offerings && company.offerings.length > 0 ? (
+                        <>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Core Expertise</p>
+                            <div className="flex flex-wrap gap-2">
+                                {company.offerings.slice(0, 3).map((offering, idx) => (
+                                    <span
+                                        key={idx}
+                                        className="bg-slate-50 text-slate-600 border border-slate-100 px-3 py-1.5 rounded-xl text-xs font-bold group-hover:bg-white group-hover:border-teal-100 group-hover:text-teal-700 transition-all duration-300"
+                                    >
+                                        {offering}
+                                    </span>
+                                ))}
+                                {company.offerings.length > 3 && (
+                                    <span className="flex items-center justify-center bg-slate-100 text-slate-500 h-8 w-8 rounded-full text-[10px] font-black">
+                                        +{company.offerings.length - 3}
+                                    </span>
+                                )}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="h-full flex items-center">
+                            <p className="text-xs text-slate-300 italic font-medium">No specialized offerings listed</p>
                         </div>
-                    </div>
-                ) : (
-                    <div className="flex-1" />
-                )}
+                    )}
+                </div>
 
-                <div className="flex gap-2 mt-auto">
+                {/* Actions */}
+                <div className="flex gap-3 mt-auto pt-4">
                     <button
                         onClick={handleViewProfile}
-                        className="flex-1 flex items-center justify-center gap-1.5 border border-gray-200 text-gray-600 px-3 py-2.5 rounded-xl hover:border-teal-300 hover:text-teal-600 hover:bg-teal-50/50 transition-all duration-200 font-semibold text-sm"
+                        className="flex-1 flex items-center justify-center gap-2 border-2 border-slate-100 text-slate-600 px-4 py-3 rounded-2xl hover:border-teal-500 hover:text-teal-600 hover:bg-teal-50/20 transition-all duration-300 font-bold text-xs"
                     >
                         <Eye className="h-4 w-4" />
-                        View Profile
+                        Details
                     </button>
                     <button
                         onClick={() => onConnect(company)}
-                        className="flex-1 flex items-center justify-center gap-1.5 bg-teal-600 text-white px-3 py-2.5 rounded-xl hover:bg-teal-700 active:scale-95 transition-all duration-200 font-semibold text-sm shadow-sm shadow-teal-200"
+                        className="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-2xl hover:bg-teal-600 hover:shadow-lg hover:shadow-teal-200 active:scale-[0.98] transition-all duration-300 font-bold text-xs"
                     >
                         <UserPlus className="h-4 w-4" />
                         Connect

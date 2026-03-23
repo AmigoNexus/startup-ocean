@@ -6,12 +6,21 @@ import logo from "../assets/logo.png";
 
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
+  const location = useLocation();
   const [openMenu, setOpenMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const menuRef = useRef(null);
+
+  const handleNavLinkClick = (e, path) => {
+    if (location.pathname === path) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    setMobileMenuOpen(false);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,7 +58,7 @@ const Navbar = () => {
         <div className={`flex justify-between items-center px-6 rounded-2xl gap-4 transition-all duration-300 ${scrolled ? 'glass h-16 shadow-lg' : 'h-12'
           }`}>
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 shrink-0 group">
+          <Link to="/" onClick={(e) => handleNavLinkClick(e, "/")} className="flex items-center space-x-2 shrink-0 group">
             <div className="bg-teal-600 p-1.5 rounded-lg group-hover:rotate-12 transition-transform shadow-lg shadow-teal-200">
               <img src={logo} alt="L" className="h-6 w-auto" />
             </div>
@@ -59,32 +68,34 @@ const Navbar = () => {
           </Link>
 
           {/* Central Search Bar (Desktop) */}
-          <div className="hidden lg:flex flex-1 justify-center px-4 max-w-md min-w-[200px] w-full mx-auto">
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder="Search by name, city..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && searchInput.trim()) {
-                    navigate(`/search?q=${encodeURIComponent(searchInput)}`);
-                  }
-                }}
-                className={`w-full pl-4 pr-10 py-2 border border-slate-200 hover:border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent text-slate-800 placeholder-slate-400 text-sm font-medium transition-all ${scrolled ? 'bg-white' : 'bg-slate-50/80 backdrop-blur-sm'}`}
-              />
-              <button
-                onClick={() => {
-                  if (searchInput.trim()) {
-                    navigate(`/search?q=${encodeURIComponent(searchInput)}`);
-                  }
-                }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-600 transition-colors p-1"
-              >
-                <Search className="h-4 w-4" />
-              </button>
+          {location.pathname !== '/search' && (
+            <div className="hidden lg:flex flex-1 justify-center px-4 max-w-md min-w-[200px] w-full mx-auto">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Search by name, city..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && searchInput.trim()) {
+                      navigate(`/search?q=${encodeURIComponent(searchInput)}`);
+                    }
+                  }}
+                  className={`w-full pl-4 pr-10 py-2 border border-slate-200 hover:border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent text-slate-800 placeholder-slate-400 text-sm font-medium transition-all ${scrolled ? 'bg-white' : 'bg-slate-50/80 backdrop-blur-sm'}`}
+                />
+                <button
+                  onClick={() => {
+                    if (searchInput.trim()) {
+                      navigate(`/search?q=${encodeURIComponent(searchInput)}`);
+                    }
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-600 transition-colors p-1"
+                >
+                  <Search className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1 shrink-0">
@@ -93,6 +104,7 @@ const Navbar = () => {
               <Link
                 key={link.to}
                 to={link.to}
+                onClick={(e) => handleNavLinkClick(e, link.to)}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all font-semibold text-sm ${scrolled
                   ? 'text-slate-600 hover:text-teal-600 hover:bg-teal-50'
                   : 'text-slate-600 hover:text-teal-600 hover:bg-slate-50'
@@ -183,38 +195,40 @@ const Navbar = () => {
         <div className="md:hidden mt-2 px-4 animate-in slide-in-from-top-4 duration-300">
           <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
             <div className="p-6 space-y-4">
-              <div className="relative mb-2">
-                <input
-                  type="text"
-                  placeholder="Search by name, city..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && searchInput.trim()) {
-                      setMobileMenuOpen(false);
-                      navigate(`/search?q=${encodeURIComponent(searchInput)}`);
-                    }
-                  }}
-                  className="w-full pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent text-slate-800 placeholder-slate-400 text-sm font-medium transition-all outline-none"
-                />
-                <button
-                  onClick={() => {
-                    if (searchInput.trim()) {
-                      setMobileMenuOpen(false);
-                      navigate(`/search?q=${encodeURIComponent(searchInput)}`);
-                    }
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-600 transition-colors"
-                >
-                  <Search className="h-5 w-5" />
-                </button>
-              </div>
+              {location.pathname !== '/search' && (
+                <div className="relative mb-2">
+                  <input
+                    type="text"
+                    placeholder="Search by name, city..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && searchInput.trim()) {
+                        setMobileMenuOpen(false);
+                        navigate(`/search?q=${encodeURIComponent(searchInput)}`);
+                      }
+                    }}
+                    className="w-full pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent text-slate-800 placeholder-slate-400 text-sm font-medium transition-all outline-none"
+                  />
+                  <button
+                    onClick={() => {
+                      if (searchInput.trim()) {
+                        setMobileMenuOpen(false);
+                        navigate(`/search?q=${encodeURIComponent(searchInput)}`);
+                      }
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-600 transition-colors"
+                  >
+                    <Search className="h-5 w-5" />
+                  </button>
+                </div>
+              )}
 
               {navLinks.map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={(e) => handleNavLinkClick(e, link.to)}
                   className="flex items-center space-x-4 p-3 hover:bg-slate-50 rounded-2xl transition group"
                 >
                   <div className="p-2 transition-colors bg-slate-50 text-slate-600 group-hover:bg-teal-100 group-hover:text-teal-600 rounded-xl">

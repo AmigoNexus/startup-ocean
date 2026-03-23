@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import HomePage from './pages/HomePage'
@@ -18,10 +19,18 @@ import VerifyOTP from './components/VerifyOTP';
 import StartupTrendingNews from './components/StartupTrendingNews';
 import StartupTrendingNewsMini from "./components/StartupTrendingNewsMini";
 import AdminEnquiriesPage from './pages/AdminEnquiriesPage';
+const ScrollToTop = () => {
+    const { pathname } = useLocation();
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+    return null;
+};
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <AuthProvider>
         <div className="flex flex-col min-h-screen">
         <Navbar />
