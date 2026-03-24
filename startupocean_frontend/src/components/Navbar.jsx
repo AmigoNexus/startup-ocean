@@ -47,6 +47,8 @@ const Navbar = () => {
     { to: "/TrendingNews", icon: <Calendar className="h-4 w-4" />, label: "Trending" },
   ];
 
+  const isDarkHeaderPage = location.pathname === '/company';
+
   if (isAuthenticated) {
     navLinks.push({ to: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard" });
   }
@@ -59,11 +61,11 @@ const Navbar = () => {
           }`}>
           {/* Logo */}
           <Link to="/" onClick={(e) => handleNavLinkClick(e, "/")} className="flex items-center space-x-2 shrink-0 group">
-            <div className="bg-teal-600 p-1.5 rounded-lg group-hover:rotate-12 transition-transform shadow-lg shadow-teal-200">
+            <div className={`p-1.5 rounded-lg group-hover:rotate-12 transition-transform shadow-lg ${isDarkHeaderPage && !scrolled ? 'bg-white/10 shadow-none ring-1 ring-white/20' : 'bg-teal-600 shadow-teal-200'}`}>
               <img src={logo} alt="L" className="h-6 w-auto" />
             </div>
-            <span className={`text-xl font-bold transition-colors ${scrolled ? 'text-slate-900' : 'text-slate-900'}`}>
-              Startup<span className="text-teal-600">Ocean</span>
+            <span className={`text-xl font-bold transition-colors ${scrolled ? 'text-slate-900' : (isDarkHeaderPage ? 'text-white' : 'text-slate-900')}`}>
+              Startup<span className={scrolled ? 'text-teal-600' : (isDarkHeaderPage ? 'text-teal-300' : 'text-teal-600')}>Ocean</span>
             </span>
           </Link>
 
@@ -107,7 +109,7 @@ const Navbar = () => {
                 onClick={(e) => handleNavLinkClick(e, link.to)}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all font-semibold text-sm ${scrolled
                   ? 'text-slate-600 hover:text-teal-600 hover:bg-teal-50'
-                  : 'text-slate-600 hover:text-teal-600 hover:bg-slate-50'
+                  : (isDarkHeaderPage ? 'text-white hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-teal-600 hover:bg-slate-50')
                   }`}
               >
                 {link.icon}
@@ -115,7 +117,7 @@ const Navbar = () => {
               </Link>
             ))}
 
-            <div className={`mx-4 h-6 w-px ${scrolled ? 'bg-slate-200' : 'bg-slate-200'}`}></div>
+            <div className={`mx-4 h-6 w-px ${scrolled ? 'bg-slate-200' : (isDarkHeaderPage ? 'bg-white/20' : 'bg-slate-200')}`}></div>
 
             {isAuthenticated ? (
               <div className="relative" ref={menuRef}>
@@ -123,13 +125,13 @@ const Navbar = () => {
                   onClick={() => setOpenMenu(!openMenu)}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition border ${scrolled
                     ? 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-                    : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                    : (isDarkHeaderPage ? 'bg-white/10 border-white/20 hover:bg-white/20 text-white' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')
                     }`}
                 >
                   <div className="w-8 h-8 bg-gradient-to-tr from-teal-500 to-cyan-400 rounded-full flex items-center justify-center text-white shadow-md">
                     <User className="h-4 w-4" />
                   </div>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${openMenu ? 'rotate-180' : ''} ${scrolled ? 'text-slate-600' : 'text-slate-600'}`} />
+                  <ChevronDown className={`h-4 w-4 transition-transform ${openMenu ? 'rotate-180' : ''} ${scrolled ? 'text-slate-600' : (isDarkHeaderPage ? 'text-white' : 'text-slate-600')}`} />
                 </button>
 
                 {openMenu && (
@@ -167,12 +169,12 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link to="/login" className={`text-sm font-bold px-4 py-2 transition ${scrolled ? 'text-slate-600 hover:text-teal-600' : 'text-slate-600 hover:text-teal-600'}`}>
+                <Link to="/login" className={`text-sm font-bold px-4 py-2 transition ${scrolled ? 'text-slate-600 hover:text-teal-600' : (isDarkHeaderPage ? 'text-white hover:text-teal-200' : 'text-slate-600 hover:text-teal-600')}`}>
                   Login
                 </Link>
                 <Link to="/register" className={`px-6 py-2.5 rounded-xl text-sm font-bold transition shadow-lg ${scrolled
                   ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-200'
-                  : 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-200'
+                  : (isDarkHeaderPage ? 'bg-white text-teal-600 hover:bg-slate-50' : 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-200')
                   }`}>
                   Sign Up
                 </Link>
@@ -183,7 +185,7 @@ const Navbar = () => {
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`md:hidden p-2 rounded-xl transition ${scrolled ? 'bg-slate-100 text-slate-900' : 'bg-slate-100 text-slate-900'}`}
+            className={`md:hidden p-2 rounded-xl transition ${scrolled ? 'bg-slate-100 text-slate-900' : (isDarkHeaderPage ? 'bg-white/10 text-white border border-white/20' : 'bg-slate-100 text-slate-900')}`}
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>

@@ -217,6 +217,16 @@ const HomePage = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 ml-1">Mobile Number <span className="text-slate-400 font-normal ml-1">(Optional)</span></label>
+                  <input
+                    type="tel"
+                    placeholder="+91 98765 43210"
+                    value={enquiryForm.phone}
+                    onChange={(e) => setEnquiryForm({ ...enquiryForm, phone: e.target.value })}
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all outline-none"
+                  />
+                </div>
+                <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700 ml-1">How can we help?</label>
                   <textarea
                     placeholder="Tell us about your startup or service..."

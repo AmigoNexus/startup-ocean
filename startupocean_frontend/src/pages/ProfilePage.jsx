@@ -186,7 +186,7 @@ const ProfilePage = () => {
                 {!isEditing ? (
                   <button
                     onClick={handleEdit}
-                    className="bg-teal-600 text-white px-4 py-2 rounded-lg flex gap-2 hover:bg-teal-700 transition"
+                    className="bg-teal-600 text-white items-center px-4 py-2 rounded-lg flex gap-2 hover:bg-teal-700 transition"
                   >
                     <Edit2 className="h-4 w-4" /> Edit Profile
                   </button>
@@ -195,13 +195,13 @@ const ProfilePage = () => {
                     <button
                       onClick={handleSave}
                       disabled={loading}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg flex gap-2 hover:bg-green-700 transition disabled:opacity-50"
+                      className="bg-green-600 text-white items-center px-4 py-2 rounded-lg flex gap-2 hover:bg-green-700 transition disabled:opacity-50"
                     >
                       <Save className="h-4 w-4" /> {loading ? 'Saving...' : 'Save'}
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="bg-gray-200 px-4 py-2 rounded-lg flex gap-2 hover:bg-gray-300 transition"
+                      className="bg-gray-200 items-center px-4 py-2 rounded-lg flex gap-2 hover:bg-gray-300 transition"
                     >
                       <X className="h-4 w-4" /> Cancel
                     </button>
