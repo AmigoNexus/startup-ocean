@@ -138,7 +138,7 @@ const Navbar = () => {
                   <div className="absolute right-0 mt-3 w-64 bg-white text-gray-800 rounded-2xl shadow-2xl border border-slate-100 py-2 animate-in fade-in slide-in-from-top-4 duration-300">
                     <div className="px-5 py-4 border-b border-slate-50 mb-1">
                       <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Signed in as</p>
-                      <p className="text-sm font-bold text-slate-900 truncate">{user?.name || user?.email}</p>
+                      <p className="text-sm font-bold text-slate-900 truncate">{user?.company?.companyName || user?.name}</p>
                     </div>
 
                     <div className="px-2">

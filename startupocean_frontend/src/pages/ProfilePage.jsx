@@ -11,7 +11,6 @@ const ProfilePage = () => {
   const { user: authUser, setUser: setAuthUser } = useAuth();
 
   const [user, setUser] = useState(null);
-  console.log(user);
   const [isEditing, setIsEditing] = useState(false);
   const [companyNameError, setCompanyNameError] = useState(false);
   const companyNameRef = useRef(null);
@@ -138,10 +137,13 @@ const ProfilePage = () => {
           city: formData.city,
           companyName: formData.companyName,
         };
-        setUser({
+        const finalAuthUserWithCompany = {
           ...updatedAuthUser,
           company: updatedCompany,
-        });
+        };
+        setAuthUser(finalAuthUserWithCompany);
+        sessionStorage.setItem('user', JSON.stringify(finalAuthUserWithCompany));
+        setUser(finalAuthUserWithCompany);
         toast.success('Profile updated successfully!');
       } else {
         setUser(updatedAuthUser);
@@ -150,6 +152,7 @@ const ProfilePage = () => {
       setIsEditing(false);
     } catch (err) {
       console.error('Failed to update profile:', err);
+      toast.error(err.response?.data?.message || 'Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -203,7 +206,7 @@ const ProfilePage = () => {
                 </div>
 
                 <div className="pt-20 text-center">
-                  <h2 className="text-2xl font-bold text-gray-800">{user.name}</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">{user.company?.companyName}</h2>
 
                   <div className="flex justify-center gap-2 my-3">
                     <span className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">

@@ -36,7 +36,6 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(true);
   const { isAuthenticated, user } = useAuth();
-
   const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
@@ -118,7 +117,7 @@ const DashboardPage = () => {
                 <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tight leading-tight">
                   Welcome Back, <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">
-                    {user?.name || stats.companyName || user?.email?.split('@')[0]}
+                    {stats.companyName || user?.company?.companyName || user?.name}
                   </span>
                 </h2>
                 <p className="text-slate-400 text-lg font-medium max-w-lg">
