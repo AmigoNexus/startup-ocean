@@ -18,7 +18,6 @@ public class EnquiryRequest {
     @Email
     private String email;
 
-    @Pattern(regexp = "^[0-9]{10}$", message = "Invalid phone number")
     private String phone;
 
     @NotBlank(message = "Message is required")

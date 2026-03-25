@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { User, Mail, Phone, Briefcase, Building2, Edit2, Save, X, Shield, MapPin, Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { companyAPI } from '../services/api';
+import { companyAPI, locationAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 const API_HOST = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8025';
@@ -11,11 +11,36 @@ const ProfilePage = () => {
   const { user: authUser, setUser: setAuthUser } = useAuth();
 
   const [user, setUser] = useState(null);
+  console.log(user);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ name: '', phoneNumber: '' });
+  const [companyNameError, setCompanyNameError] = useState(false);
+  const companyNameRef = useRef(null);
+  const [formData, setFormData] = useState({ name: '', phoneNumber: '', city: '', companyName: '' });
   const [loading, setLoading] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [cities, setCities] = useState([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
+  const [citiesError, setCitiesError] = useState('');
   const activeService = user?.company?.services?.[0];
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchCities = async () => {
+      setCitiesLoading(true);
+      try {
+        const res = await locationAPI.getCities();
+        const data = res.data?.data ?? res.data ?? [];
+        if (mounted) setCities(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to fetch cities', err);
+        if (mounted) setCitiesError('Failed to load cities');
+      } finally {
+        if (mounted) setCitiesLoading(false);
+      }
+    };
+    fetchCities();
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     if (authUser) {
@@ -23,6 +48,8 @@ const ProfilePage = () => {
       setFormData({
         name: authUser.name || '',
         phoneNumber: authUser.phoneNumber || '',
+        city: authUser.company?.city || '',
+        companyName: authUser.company?.companyName || '',
       });
       fetchCompany();
     }
@@ -41,6 +68,7 @@ const ProfilePage = () => {
         setFormData((prev) => ({
           ...prev,
           phoneNumber: companyData.phoneNumber || '',
+          city: companyData.city || '',
         }));
       }
     } catch (err) {
@@ -50,21 +78,36 @@ const ProfilePage = () => {
 
   const handleEdit = () => {
     setIsEditing(true);
+    setCompanyNameError(false);
     setFormData({
       name: user.name || '',
       phoneNumber: user.company?.phoneNumber || user.phoneNumber || '',
+      city: user.company?.city || '',
+      companyName: user.company?.companyName || '',
     });
   };
 
   const handleCancel = () => {
     setIsEditing(false);
+    setCompanyNameError(false);
     setFormData({
       name: user.name || '',
       phoneNumber: user.company?.phoneNumber || user.phoneNumber || '',
+      companyName: user.company?.companyName || '',
+      city: user.company?.city || '',
     });
   };
 
   const handleSave = async () => {
+    if (user.company && user.company.companyId && (!formData.companyName || formData.companyName.trim() === '')) {
+      toast.error('Company Name cannot be empty');
+      setCompanyNameError(true);
+      setTimeout(() => {
+        companyNameRef.current?.focus();
+      }, 0);
+      return;
+    }
+
     setLoading(true);
     try {
       const updatedAuthUser = {
@@ -73,12 +116,13 @@ const ProfilePage = () => {
         phoneNumber: formData.phoneNumber,
       };
 
-      localStorage.setItem('user', JSON.stringify(updatedAuthUser));
+      sessionStorage.setItem('user', JSON.stringify(updatedAuthUser));
       setAuthUser(updatedAuthUser);
       if (user.company && user.company.companyId) {
         const companyPayload = {
-          companyName: user.company.companyName,
+          companyName: formData.companyName,
           phoneNumber: formData.phoneNumber,
+          city: formData.city,
           socialLinks: user.company.socialLinks || {},
 
           services: user.company.services?.map(s => ({
@@ -91,6 +135,8 @@ const ProfilePage = () => {
         const updatedCompany = {
           ...user.company,
           phoneNumber: formData.phoneNumber,
+          city: formData.city,
+          companyName: formData.companyName,
         };
         setUser({
           ...updatedAuthUser,
@@ -209,16 +255,23 @@ const ProfilePage = () => {
                 )}
               </div>
 
-              <Label label="Full Name">
-                {isEditing ? (
+              <Label label="Company Name">
+                {isEditing && user.company ? (
                   <input
+                    ref={companyNameRef}
                     type="text"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent outline-none transition-all ${companyNameError
+                      ? 'border-red-500 focus:ring-red-500'
+                      : 'border-gray-300 focus:ring-teal-500'
+                      }`}
+                    value={formData.companyName || ''}
+                    onChange={(e) => {
+                      setFormData({ ...formData, companyName: e.target.value });
+                      if (companyNameError) setCompanyNameError(false);
+                    }}
                   />
                 ) : (
-                  <Value icon={<User className="h-5 w-5 text-teal-600" />} value={user.name} />
+                  <Value icon={<Building2 className="h-5 w-5 text-blue-600" />} value={user.company?.companyName || 'Not provided'} />
                 )}
               </Label>
 
@@ -227,7 +280,78 @@ const ProfilePage = () => {
               </Label>
 
               <Label label="City">
-                <Value icon={<MapPin className="h-5 w-5 text-orange-500" />} value={user.company?.city || 'Not provided'} />
+                {isEditing && user.company ? (
+                  citiesLoading ? (
+                    <div className="text-sm text-gray-500 animate-pulse bg-gray-100 p-3 rounded-lg">Loading cities...</div>
+                  ) : citiesError ? (
+                    <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">{citiesError}</div>
+                  ) : (
+                    <div className="relative overflow-visible">
+                      <input
+                        type="text"
+                        placeholder="Search or select city..."
+                        value={formData.city || ''}
+                        autoComplete="off"
+                        onFocus={() => {
+                          const dropdown = document.getElementById('profile-city-dropdown');
+                          const overlay = document.getElementById('profile-city-dropdown-overlay');
+                          if (dropdown) dropdown.classList.remove('hidden');
+                          if (overlay) overlay.classList.remove('hidden');
+                        }}
+                        onChange={(e) => {
+                          setFormData({ ...formData, city: e.target.value });
+                        }}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
+                      />
+                      <div
+                        id="profile-city-dropdown"
+                        className="absolute z-[100] mt-1 w-full max-h-60 bg-white border border-gray-200 rounded-lg shadow-xl overflow-y-auto hidden animate-in fade-in slide-in-from-top-2 duration-200"
+                      >
+                        <div className="p-2 sticky top-0 bg-white border-b border-gray-100">
+                          <p className="text-[10px] text-gray-400 font-bold tracking-wider px-2 py-1">Available Cities</p>
+                        </div>
+                        {cities.filter(c =>
+                          !formData.city || c.cityName.toLowerCase().includes(formData.city.toLowerCase())
+                        ).length > 0 ? (
+                          cities.filter(c =>
+                            !formData.city || c.cityName.toLowerCase().includes(formData.city.toLowerCase())
+                          ).map((c) => (
+                            <button
+                              key={c.cityId}
+                              type="button"
+                              onClick={() => {
+                                setFormData({ ...formData, city: c.cityName });
+                                document.getElementById('profile-city-dropdown').classList.add('hidden');
+                                document.getElementById('profile-city-dropdown-overlay').classList.add('hidden');
+                              }}
+                              className="w-full text-left px-4 py-2.5 hover:bg-teal-50 hover:text-teal-700 transition-colors text-sm flex items-center justify-between group"
+                            >
+                              <span>{c.cityName}</span>
+                              {formData.city === c.cityName && (
+                                <span className="w-2 h-2 bg-teal-500 rounded-full"></span>
+                              )}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-4 py-8 text-center">
+                            <p className="text-sm text-gray-500 italic">No cities found matching "{formData.city}"</p>
+                            <p className="text-xs text-gray-400 mt-1">You can keep typing to add a custom city.</p>
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        id="profile-city-dropdown-overlay"
+                        className="fixed inset-0 z-[90] hidden"
+                        onClick={() => {
+                          document.getElementById('profile-city-dropdown').classList.add('hidden');
+                          document.getElementById('profile-city-dropdown-overlay').classList.add('hidden');
+                        }}
+                      ></div>
+                    </div>
+                  )
+                ) : (
+                  <Value icon={<MapPin className="h-5 w-5 text-orange-500" />} value={user.company?.city || 'Not provided'} />
+                )}
               </Label>
 
               <Label label="Company Logo">
@@ -320,8 +444,6 @@ const ProfilePage = () => {
     </div>
   );
 };
-
-
 
 const Label = ({ label, children }) => (
   <div className="mb-4">

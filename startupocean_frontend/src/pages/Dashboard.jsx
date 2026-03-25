@@ -8,7 +8,6 @@ import {
   MessageSquare,
   Search,
   PlusCircle,
-  Settings,
   Bell,
   ArrowRight,
   TrendingUp,
@@ -28,6 +27,7 @@ const messageAPI = {
 const DashboardPage = () => {
   const [stats, setStats] = useState({
     hasCompany: false,
+    companyName: '',
     upcomingEvents: 0,
     collaborations: 0,
     unreadMessages: 0,
@@ -60,6 +60,7 @@ const DashboardPage = () => {
 
       setStats({
         hasCompany: companyRes.data.success,
+        companyName: companyRes.data?.data?.companyName || '',
         upcomingEvents: eventsRes.data.data?.length || 0,
         collaborations: collabRes.data.data?.filter(c => c.status === 'PENDING').length || 0,
         unreadMessages: messagesRes.data.data || 0,
@@ -117,7 +118,7 @@ const DashboardPage = () => {
                 <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tight leading-tight">
                   Welcome Back, <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">
-                    {user?.name || user?.email?.split('@')[0]}
+                    {user?.name || stats.companyName || user?.email?.split('@')[0]}
                   </span>
                 </h2>
                 <p className="text-slate-400 text-lg font-medium max-w-lg">

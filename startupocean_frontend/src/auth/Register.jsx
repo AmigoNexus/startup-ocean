@@ -1,5 +1,5 @@
 import { UserPlus, Plus, X, Building2, Share2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI, companyAPI } from '../services/api';
@@ -31,6 +31,11 @@ const Register = () => {
   const [registering, setRegistering] = useState(false);
   const [phoneError, setPhoneError] = useState('');
 
+  const companyNameRef = useRef(null);
+  const emailRef = useRef(null);
+  const [companyNameError, setCompanyNameError] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
   const [isEmailVerified, setIsEmailVerified] = useState(false);
@@ -46,9 +51,29 @@ const Register = () => {
   const handleNextStep = (e) => {
     e.preventDefault();
     setError('');
-    if (step === 1 && !isEmailVerified) {
-      toast.error('Please verify your email address to continue');
-      return;
+
+    if (step === 1) {
+      let hasError = false;
+      if (!formData.companyName || formData.companyName.trim() === '') {
+        setCompanyNameError(true);
+        toast.error('Company Name cannot be empty');
+        setTimeout(() => companyNameRef.current?.focus(), 0);
+        hasError = true;
+      } else if (!formData.email || formData.email.trim() === '') {
+        setEmailError(true);
+        toast.error('Email cannot be empty');
+        setTimeout(() => emailRef.current?.focus(), 0);
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      if (!isEmailVerified) {
+        toast.error('Please verify your email address to continue');
+        setEmailError(true);
+        setTimeout(() => emailRef.current?.focus(), 0);
+        return;
+      }
     }
     if (step === 2) {
       if (formData.companyDetails.length === 0) {
@@ -84,7 +109,9 @@ const Register = () => {
     if (isSendingOtp) return;
 
     if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
-      toast('Please enter a valid email address');
+      setEmailError(true);
+      toast.error('Please enter a valid email address');
+      setTimeout(() => emailRef.current?.focus(), 0);
       return;
     }
 
@@ -151,25 +178,6 @@ const Register = () => {
       setStep(prev);
     } else if (step > 1) {
       setStep(step - 1);
-    }
-  };
-
-  const addCompanyDetail = () => {
-    const existingTypes = formData.companyDetails.map(c => c.type);
-    const availableTypes = [
-      { value: 'STARTUP', label: 'Startup Company' },
-      { value: 'SERVICE_PROVIDER', label: 'Service Provider' }
-    ].filter(t => !existingTypes.includes(t.value));
-
-    if (availableTypes.length === 0) {
-      toast.error('You can only add Startup and Service Provider once each');
-      return;
-    }
-
-    if (availableTypes.length === 1) {
-      confirmAddCompanyDetail(availableTypes[0].value);
-    } else {
-      setShowCompanyTypeSelection(true);
     }
   };
 
@@ -278,6 +286,8 @@ const Register = () => {
 
       if (tempVerifiedData) {
         const { token, ...userData } = tempVerifiedData;
+        userData.name = formData.companyName;
+        sessionStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
       }
 
@@ -398,6 +408,12 @@ const Register = () => {
                   setPhoneError={setPhoneError}
                   handleSendOtp={handleSendOtp}
                   handleVerifyOtp={handleVerifyOtp}
+                  companyNameRef={companyNameRef}
+                  emailRef={emailRef}
+                  companyNameError={companyNameError}
+                  setCompanyNameError={setCompanyNameError}
+                  emailError={emailError}
+                  setEmailError={setEmailError}
                   handleChangeEmail={() => {
                     setIsOtpSent(false);
                     setOtp('');

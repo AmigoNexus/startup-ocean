@@ -12,11 +12,15 @@ const BasicInformation = ({
   otp,
   setOtp,
   resendTimer,
-  phoneError,
-  setPhoneError,
   handleSendOtp,
   handleVerifyOtp,
   handleChangeEmail,
+  companyNameRef,
+  emailRef,
+  companyNameError,
+  setCompanyNameError,
+  emailError,
+  setEmailError,
 }) => {
   const [cities, setCities] = useState([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
@@ -48,11 +52,15 @@ const BasicInformation = ({
           Company Name *
         </label>
         <input
+          ref={companyNameRef}
           type="text"
-          required
           value={formData.companyName}
-          onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+          onChange={(e) => {
+            setFormData({ ...formData, companyName: e.target.value });
+            if (companyNameError) setCompanyNameError(false);
+          }}
+          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent ${companyNameError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'
+            }`}
           placeholder="Your Company Name"
         />
       </div>
@@ -63,12 +71,19 @@ const BasicInformation = ({
         </label>
         <div className="relative">
           <input
+            ref={emailRef}
             type="email"
-            required
             disabled={isEmailVerified || isOtpSent}
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent ${isEmailVerified ? 'bg-green-50 border-green-200' : ''
+            onChange={(e) => {
+              setFormData({ ...formData, email: e.target.value });
+              if (emailError) setEmailError(false);
+            }}
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent ${isEmailVerified
+              ? 'bg-green-50 border-green-200 focus:ring-green-500'
+              : emailError
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-teal-500'
               }`}
             placeholder="your.email@example.com"
           />
